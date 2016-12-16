@@ -22,6 +22,21 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.2.5.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>6.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.zeromq</groupId>
+            <artifactId>jzmq</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.libvirt</groupId>
             <artifactId>libvirt</artifactId>
             <version>0.5.1</version>
@@ -40,21 +55,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.1.8</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>5.2.5.Final</version>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>6.0.5</version>
-        </dependency>
-        <dependency>
-            <groupId>org.zeromq</groupId>
-            <artifactId>jzmq</artifactId>
-            <version>3.1.0</version>
         </dependency>
     </dependencies>
 
