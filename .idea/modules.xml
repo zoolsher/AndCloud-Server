@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/andcloud-server.iml" filepath="$PROJECT_DIR$/andcloud-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/andcloud.iml" filepath="$PROJECT_DIR$/andcloud.iml" />
     </modules>
   </component>
 </project>

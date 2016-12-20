@@ -1,3 +1,5 @@
+import com.safecode.andcloud.service.LibvirtService;
+import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -17,6 +19,13 @@ public class Main {
         logger.info("Loading Spring Context");
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext("com.safecode.andcloud.configuration");
         logger.info("Server initialization finished.");
+
+        LibvirtService libvirtService = ctx.getBean(LibvirtService.class);
+        try {
+            libvirtService.listAllDomain();
+        } catch (LibvirtException e) {
+            e.printStackTrace();
+        }
     }
 
 }

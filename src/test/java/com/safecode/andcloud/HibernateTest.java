@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Sumy
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {com.safecode.andcloud.configuration.SpringAppContext.class,
+@ContextConfiguration(classes = {com.safecode.andcloud.configuration.ApplicationContext.class,
         com.safecode.andcloud.configuration.HibernateConfiguration.class})
 public class HibernateTest extends AbstractJUnit4SpringContextTests {
 
