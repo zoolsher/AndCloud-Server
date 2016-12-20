@@ -23,7 +23,12 @@ public class LibvirtService {
 
     public void listAllDomain() throws LibvirtException {
         logger.info("Start list domains...");
-        for(int id : conn.listDomains()){
+        for (String dom : conn.listDefinedDomains()) {
+            Domain domain = conn.domainLookupByName(dom);
+            System.out.println(domain.getID() + ":" + domain.getName());
+        }
+        System.out.println("---------------------");
+        for (int id : conn.listDomains()) {
             Domain dom = conn.domainLookupByID(id);
             System.out.println(dom.getID() + ":" + dom.getName());
         }

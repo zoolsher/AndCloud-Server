@@ -10,6 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
@@ -32,6 +33,18 @@ public class ApplicationContext {
     public Connect libvirtConnect() throws LibvirtException {
         Connect conn = new Connect(environment.getProperty("libvirt.endpoint"));
         return conn;
+    }
+
+    /**
+     * 线程池
+     * @return 线程池管理对象
+     */
+    @Bean
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor threadPoolExecutor = new ThreadPoolTaskExecutor();
+        threadPoolExecutor.setCorePoolSize(Integer.parseInt(environment.getProperty("threadpool.coresize")));
+        threadPoolExecutor.setMaxPoolSize(Integer.parseInt(environment.getProperty("threadpool.maxsize")));
+        return threadPoolExecutor;
     }
 
 }
