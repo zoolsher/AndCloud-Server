@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Sumy
  */
 @Repository
-@Transactional
 public class MirrorImageDao extends BaseDao {
 
     public void saveOrUpdate(MirrorImage mirrorImage) {

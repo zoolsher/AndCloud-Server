@@ -1,4 +1,5 @@
 import com.safecode.andcloud.service.LibvirtService;
+import com.safecode.andcloud.worker.MessageReciverWorker;
 import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,8 +18,12 @@ public class Main {
     public static void main(String[] args) {
         logger.info("Server Start...");
         logger.info("Loading Spring Context");
-        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext("com.safecode.andcloud.configuration");
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext("com.safecode.andcloud");
         logger.info("Server initialization finished.");
+
+        logger.info("Start MessageReciver");
+        MessageReciverWorker worker = ctx.getBean(MessageReciverWorker.class);
+        worker.start();
 
         LibvirtService libvirtService = ctx.getBean(LibvirtService.class);
         try {
