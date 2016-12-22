@@ -1,5 +1,6 @@
 package com.safecode.andcloud.configuration;
 
+import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.worker.MessageReciverWorker;
 import org.libvirt.Connect;
 import org.libvirt.LibvirtException;
@@ -66,4 +67,13 @@ public class ApplicationContext {
         return worker;
     }
 
+    /**
+     * Spring 上下文持有类，用于一些特殊情况下无法注入而需要获取 Bean 的情况
+     *
+     * @return Spring 上下文工具类对象
+     */
+    @Bean
+    public SpringContextUtil springContextUtil() {
+        return new SpringContextUtil();
+    }
 }

@@ -1,3 +1,5 @@
+package com.safecode.andcloud;
+
 import com.safecode.andcloud.service.LibvirtService;
 import com.safecode.andcloud.worker.MessageReciverWorker;
 import org.libvirt.LibvirtException;
@@ -6,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * Server Main Class.
+ * Server com.safecode.andcloud.Main Class.
  *
  * @author zoolsher
  * @author Sumy
