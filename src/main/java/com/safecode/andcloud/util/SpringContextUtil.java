@@ -51,6 +51,11 @@ public class SpringContextUtil implements ApplicationContextAware {
         return (T) applicationContext.getBean(clazz);
     }
 
+    public static <T> T getBean(Class<T> clazz, String name) {
+        checkApplicationContext();
+        return (T) applicationContext.getBean(name, clazz);
+    }
+
     private static void checkApplicationContext() {
         Assert.notNull(applicationContext,
                 "applicaitonContext未注入,请在applicationContext.xml中定义SpringContextUtil");

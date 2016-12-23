@@ -12,6 +12,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -75,5 +77,11 @@ public class ApplicationContext {
     @Bean
     public SpringContextUtil springContextUtil() {
         return new SpringContextUtil();
+    }
+
+    @Bean(name = "domaindefine.xml")
+    public Resource domainDefineXmlResource(){
+        Resource resource = new ClassPathResource("domaindefine.xml");
+        return resource;
     }
 }

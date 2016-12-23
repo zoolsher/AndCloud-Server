@@ -1,6 +1,7 @@
 package com.safecode.andcloud;
 
 import com.safecode.andcloud.service.LibvirtService;
+import com.safecode.andcloud.util.DomainDefineXMLUtil;
 import com.safecode.andcloud.worker.MessageReciverWorker;
 import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
@@ -22,6 +23,9 @@ public class Main {
         logger.info("Loading Spring Context");
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext("com.safecode.andcloud");
         logger.info("Server initialization finished.");
+
+        logger.info("Load domaindefine XML file.");
+        logger.debug(DomainDefineXMLUtil.template);
 
         logger.info("Start MessageReciver");
         MessageReciverWorker worker = ctx.getBean(MessageReciverWorker.class);

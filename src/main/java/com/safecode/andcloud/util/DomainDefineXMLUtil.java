@@ -3,12 +3,15 @@ package com.safecode.andcloud.util;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
 
 /**
  * Domain定义文件生成工具
+ *
+ * @author sumy
  */
 public class DomainDefineXMLUtil {
 
@@ -17,11 +20,10 @@ public class DomainDefineXMLUtil {
 
     static {
         StringBuilder buf = new StringBuilder();
-        File file = null;
         BufferedReader reader = null;
         try {
-            file = ResourceUtils.getFile("classpath:android.domain.xml");
-            reader = new BufferedReader(new FileReader(file));
+            Resource resource = SpringContextUtil.getBean(Resource.class, "domaindefine.xml");
+            reader = new BufferedReader(new InputStreamReader(resource.getInputStream()));
             String line = null;
             while ((line = reader.readLine()) != null) {
                 buf.append(line);

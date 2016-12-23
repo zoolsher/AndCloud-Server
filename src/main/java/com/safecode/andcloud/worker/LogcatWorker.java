@@ -30,11 +30,8 @@ public class LogcatWorker extends Thread {
 
     @Override
     public void run() {
-        String[] command = {"adb", "logcat", "", ""};
-        if (ipAddress != null) {
-            command[2] = "-s";
-            command[3] = ipAddress + ":5555";
-        }
+        String[] commands = {"adb", "-s", ipAddress + ":5555", "logcat"};
+
         File file = new File(outputFile);
         PrintWriter logFileWriter = null;
         try {
@@ -44,7 +41,7 @@ public class LogcatWorker extends Thread {
             logger.error("Create LogCat File Error.", e);
         }
         try {
-            Process process = Runtime.getRuntime().exec(command);
+            Process process = Runtime.getRuntime().exec(commands);
             InputStreamReader instream = new InputStreamReader(process.getInputStream());
             LineNumberReader input = new LineNumberReader(instream);
             // process.waitFor();

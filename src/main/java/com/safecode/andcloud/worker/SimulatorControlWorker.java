@@ -2,6 +2,7 @@ package com.safecode.andcloud.worker;
 
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
+import com.safecode.andcloud.service.ADBService;
 import com.safecode.andcloud.service.LibvirtService;
 import com.safecode.andcloud.service.MirrorService;
 import com.safecode.andcloud.service.ProjectService;
@@ -21,6 +22,7 @@ public class SimulatorControlWorker implements Runnable {
     private ProjectService projectService;
     private MirrorService mirrorService;
     private LibvirtService libvirtService;
+    private ADBService adbService;
 
     private Work work;
 
@@ -29,6 +31,7 @@ public class SimulatorControlWorker implements Runnable {
         this.projectService = SpringContextUtil.getBean(ProjectService.class);
         this.mirrorService = SpringContextUtil.getBean(MirrorService.class);
         this.libvirtService = SpringContextUtil.getBean(LibvirtService.class);
+        this.adbService = SpringContextUtil.getBean(ADBService.class);
     }
 
     @Override
@@ -39,14 +42,14 @@ public class SimulatorControlWorker implements Runnable {
             return;
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
-                work.getUid(), work.getType(), "/var/lib/libvirt/images/android.img");
+                work.getUid(), work.getType(), "/var/lib/libvirt/images/android2.img");
         try {
             logger.info("[Worker] Define and Start Simulator");
             libvirtService.defineDomain(simulatorDomain);
             libvirtService.startDomainByDomainName(simulatorDomain.getName());
-            // 等待 30 秒 系统启动
+            // 等待 60 秒 系统启动
             try {
-                Thread.sleep(30000);
+                Thread.sleep(60000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -62,11 +65,17 @@ public class SimulatorControlWorker implements Runnable {
                 }
                 ip = libvirtService.getIPAddressByMacAddress(simulatorDomain.getMac());
                 if (ip == null || ip.equals("")) {
-                    logger.info("[Worker]Cant got IP for SIM-" + simulatorDomain.getName() + ". Exit.");
+                    logger.error("[Worker]Cant got IP for SIM-" + simulatorDomain.getName() + ". Exit.");
                 }
             } else {
+                adbService.connectSIMByIP(ip);
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt", ip);
-                logcatWorker.run();
+                logcatWorker.start();
                 // 写死的 1 分钟检测时间
                 // TODO 检测时间配置
                 try {
