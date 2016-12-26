@@ -16,6 +16,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.zeromq.ZMQ;
 
 /**
  * Spring Context configuration class.
@@ -80,8 +81,18 @@ public class ApplicationContext {
     }
 
     @Bean(name = "domaindefine.xml")
-    public Resource domainDefineXmlResource(){
+    public Resource domainDefineXmlResource() {
         Resource resource = new ClassPathResource("domaindefine.xml");
         return resource;
+    }
+
+    @Bean(name = "logmq")
+    public ZMQ.Socket bindLogMQ() {
+        ZMQ.Context ctx = ZMQ.context(1);
+        ZMQ.Socket socket = ctx.socket(ZMQ.PUB);
+        String endpoint = environment.getRequiredProperty("mq.log.endpoint");
+        socket.bind(endpoint);
+        logger.info("log message queen bind on " + endpoint);
+        return socket;
     }
 }

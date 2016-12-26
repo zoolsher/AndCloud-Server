@@ -1,5 +1,7 @@
 package com.safecode.andcloud.worker;
 
+import com.safecode.andcloud.service.LogMQService;
+import com.safecode.andcloud.util.SpringContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,18 +11,24 @@ import java.io.*;
  * 线程 Worker - 用于从 LogCat 中抓取设备的 Log，然后将其输出到指定位置
  *
  * @author sumy
+ * @author zoolsher
  */
 public class LogcatWorker extends Thread {
 
     private final static Logger logger = LoggerFactory.getLogger(LogcatWorker.class);
 
     private boolean isStop = false;
+    private String deviceId;
     private String outputFile;
     private String ipAddress;
 
-    public LogcatWorker(String outputFile, String ipAddress) {
+    private LogMQService logMQService;
+
+    public LogcatWorker(String outputFile, String ipAddress, String deviceId) {
+        this.deviceId = deviceId;
         this.outputFile = outputFile;
         this.ipAddress = ipAddress;
+        this.logMQService = SpringContextUtil.getBean(LogMQService.class);
         this.isStop = false;
     }
 
@@ -50,6 +58,7 @@ public class LogcatWorker extends Thread {
                 System.out.println(line);
                 if (logFileWriter != null) {
                     logFileWriter.println(line);
+                    logMQService.sendDeviceLog(this.deviceId, line);
                 }
                 if (isStop) {
                     break;

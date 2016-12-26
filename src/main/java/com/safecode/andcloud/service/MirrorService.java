@@ -1,6 +1,9 @@
 package com.safecode.andcloud.service;
 
+import com.safecode.andcloud.dao.DeviceMapDao;
 import com.safecode.andcloud.dao.SimulatorDomainDao;
+import com.safecode.andcloud.model.DeviceMap;
+import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
 import com.safecode.andcloud.util.DomainAttrUtil;
 import org.joda.time.DateTime;
@@ -12,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 操作虚拟机镜像的相关服务
  *
  * @author sumy
+ * @author zoolsher
  */
 @Service
 @Transactional
@@ -19,6 +23,9 @@ public class MirrorService {
 
     @Autowired
     private SimulatorDomainDao simulatorDomainDao;
+    @Autowired
+    private DeviceMapDao deviceMapDao;
+
 
     public SimulatorDomain newSimulatorDomain(int projid, int userid, int type, String imagePath) {
         SimulatorDomain domain = new SimulatorDomain();
@@ -30,6 +37,15 @@ public class MirrorService {
         domain.setMac(DomainAttrUtil.generateMACAddress());
         simulatorDomainDao.saveOrUpdate(domain);
         return domain;
+    }
+
+    public DeviceMap newDeviceMap(Project project,SimulatorDomain simulatorDomain,Integer type){
+        DeviceMap deviceMap = new DeviceMap();
+        deviceMap.setProject(project);
+        deviceMap.setType(type);
+        deviceMap.setSimulatorDomain(simulatorDomain);
+        deviceMapDao.saveOrUpdate(deviceMap);
+        return deviceMap;
     }
 
     public void deleteSimulatorDomain(SimulatorDomain simulatorDomain) {

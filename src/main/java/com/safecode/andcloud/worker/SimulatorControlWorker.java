@@ -1,5 +1,6 @@
 package com.safecode.andcloud.worker;
 
+import com.safecode.andcloud.model.DeviceMap;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
 import com.safecode.andcloud.service.ADBService;
@@ -14,6 +15,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * 控制虚拟机，创建线程，或执行想要执行的操作
+ *
+ * @author sumy
+ * @author zoolsher
  */
 public class SimulatorControlWorker implements Runnable {
 
@@ -43,6 +47,7 @@ public class SimulatorControlWorker implements Runnable {
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
                 work.getUid(), work.getType(), "/var/lib/libvirt/images/android2.img");
+        DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
         try {
             logger.info("[Worker] Define and Start Simulator");
             libvirtService.defineDomain(simulatorDomain);
@@ -74,7 +79,7 @@ public class SimulatorControlWorker implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt", ip);
+                LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt", ip, simulatorDomain.getId() + "");
                 logcatWorker.start();
                 // 写死的 1 分钟检测时间
                 // TODO 检测时间配置

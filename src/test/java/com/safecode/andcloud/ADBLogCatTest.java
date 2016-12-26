@@ -10,7 +10,7 @@ import com.safecode.andcloud.worker.LogcatWorker;
 public class ADBLogCatTest {
 
     public static void main(String[] args) {
-        LogcatWorker thread = new LogcatWorker("log.txt", null);
+        LogcatWorker thread = new LogcatWorker("log.txt", null, "0");
         thread.start();
         try {
             Thread.sleep(10000);
