@@ -1,5 +1,6 @@
 package com.safecode.andcloud;
 
+import com.safecode.andcloud.compoment.LogACWebSocketServer;
 import com.safecode.andcloud.service.LibvirtService;
 import com.safecode.andcloud.util.DomainDefineXMLUtil;
 import com.safecode.andcloud.worker.MessageReciverWorker;
@@ -31,12 +32,9 @@ public class Main {
         MessageReciverWorker worker = ctx.getBean(MessageReciverWorker.class);
         worker.start();
 
-        LibvirtService libvirtService = ctx.getBean(LibvirtService.class);
-        try {
-            libvirtService.listAllDomain();
-        } catch (LibvirtException e) {
-            e.printStackTrace();
-        }
+        logger.info("Start Log WebSocket Server");
+        LogACWebSocketServer logACWebSocketServer = ctx.getBean(LogACWebSocketServer.class);
+        logACWebSocketServer.start();
     }
 
 }
