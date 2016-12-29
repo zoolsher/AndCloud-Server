@@ -39,6 +39,10 @@ public class Project {
     @Column(name = "package")
     private String packageName;
 
+    @OneToOne
+    @JoinColumn(name = "mirrorid")
+    private MirrorImage mirrorImage;
+
     public String getLogo() {
         return logo;
     }
@@ -93,5 +97,13 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public MirrorImage getMirrorImage() {
+        return mirrorImage;
+    }
+
+    public void setMirrorImage(MirrorImage mirrorImage) {
+        this.mirrorImage = mirrorImage;
     }
 }

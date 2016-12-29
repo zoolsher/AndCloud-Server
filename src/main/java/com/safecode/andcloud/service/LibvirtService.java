@@ -10,9 +10,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * Libvirt 虚拟机操作
@@ -27,6 +30,12 @@ public class LibvirtService {
     @Autowired
     private Connect conn;
 
+    /**
+     * 测试方法
+     *
+     * @throws LibvirtException libvirt异常
+     */
+    @Deprecated
     public void listAllDomain() throws LibvirtException {
         logger.info("Start list domains...");
         for (String dom : conn.listDefinedDomains()) {
@@ -88,5 +97,24 @@ public class LibvirtService {
             logger.error("Get IP Address Error.", e);
         }
         return ip;
+    }
+
+    public String createDeriveImageFromMasterImage(String masterImagePath, String prefix) {
+        Path targetPath = new File("/var/lib/libvirt/images")
+                .toPath().resolve(prefix + "-" + UUID.randomUUID().toString());
+        String targetImagePath = targetPath.toFile().getAbsolutePath();
+        String[] command = {"qemu-img", "create", "-b", masterImagePath, "-f", "qcow2", targetImagePath};
+        logger.debug("Create Image " + targetImagePath);
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            process.waitFor();
+        } catch (IOException e) {
+            logger.error("Create Image Error.", e);
+            return "";
+        } catch (InterruptedException e) {
+            logger.error("Create Image Error.", e);
+            return "";
+        }
+        return targetImagePath;
     }
 }

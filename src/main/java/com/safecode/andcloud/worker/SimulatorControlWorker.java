@@ -29,6 +29,7 @@ public class SimulatorControlWorker implements Runnable {
     private ADBService adbService;
 
     private Work work;
+    private String emulatorIdentifier;
 
     public SimulatorControlWorker(Work work) {
         this.work = work;
@@ -45,8 +46,12 @@ public class SimulatorControlWorker implements Runnable {
             logger.info("[Worker] Can't found project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
             return;
         }
+        String imagePath = libvirtService.createDeriveImageFromMasterImage("/var/lib/libvirt/images/branch-4.4-rc4-v1.img", work.getUid().toString());
+        if (imagePath.length() == 0) {
+            logger.warn("[Worker] Can't create work image for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
+        }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
-                work.getUid(), work.getType(), "/var/lib/libvirt/images/android2.img");
+                work.getUid(), work.getType(), imagePath);
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
         try {
             logger.info("[Worker] Define and Start Simulator");
@@ -73,7 +78,8 @@ public class SimulatorControlWorker implements Runnable {
                     logger.error("[Worker]Cant got IP for SIM-" + simulatorDomain.getName() + ". Exit.");
                 }
             } else {
-                adbService.connectSIMByIP(ip);
+                this.emulatorIdentifier = ip + ":5555";
+                adbService.connect(this.emulatorIdentifier);
                 try {
                     Thread.sleep(3000);
                 } catch (InterruptedException e) {
@@ -81,10 +87,11 @@ public class SimulatorControlWorker implements Runnable {
                 }
                 LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt", ip, simulatorDomain.getId() + "");
                 logcatWorker.start();
+                // TODO 安装apk
                 // 写死的 1 分钟检测时间
                 // TODO 检测时间配置
                 try {
-                    Thread.sleep(60000);
+                    Thread.sleep(600000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

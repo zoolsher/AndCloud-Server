@@ -1,17 +1,16 @@
 package com.safecode.andcloud.compoment;
 
 import com.google.gson.Gson;
-import com.safecode.andcloud.model.DeviceMap;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.Token;
 import com.safecode.andcloud.service.ProjectService;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.vo.message.LogMessage;
 import org.java_websocket.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -20,6 +19,8 @@ import java.net.UnknownHostException;
  * @author zoolsher
  */
 public class LogACWebSocketServer extends ACWebSocketServer {
+    private final static Logger logger = LoggerFactory.getLogger(LogACWebSocketServer.class);
+
     private ProjectService projectService;
     private ZMQ.Socket logMQSubSocket;
 

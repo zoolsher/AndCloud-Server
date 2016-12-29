@@ -105,6 +105,7 @@ public class ApplicationContext {
         ZMQ.Socket socket = ctx.socket(ZMQ.SUB);
         String endpoint = environment.getRequiredProperty("mq.log.endpoint");
         socket.connect(endpoint);
+        socket.subscribe("".getBytes());
         logger.info("log message queue connect");
         return socket;
     }
