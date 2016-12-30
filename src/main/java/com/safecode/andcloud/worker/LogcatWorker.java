@@ -20,14 +20,14 @@ public class LogcatWorker extends Thread {
     private boolean isStop = false;
     private String deviceId;
     private String outputFile;
-    private String ipAddress;
+    private String identifier;
 
     private LogMQService logMQService;
 
-    public LogcatWorker(String outputFile, String ipAddress, String deviceId) {
+    public LogcatWorker(String outputFile, String identifier, String deviceId) {
         this.deviceId = deviceId;
         this.outputFile = outputFile;
-        this.ipAddress = ipAddress;
+        this.identifier = identifier;
         this.logMQService = SpringContextUtil.getBean(LogMQService.class);
         this.isStop = false;
     }
@@ -38,7 +38,7 @@ public class LogcatWorker extends Thread {
 
     @Override
     public void run() {
-        String[] commands = {"adb", "-s", ipAddress + ":5555", "logcat"};
+        String[] commands = {"adb", "-s", identifier, "logcat"};
 
         File file = new File(outputFile);
         PrintWriter logFileWriter = null;

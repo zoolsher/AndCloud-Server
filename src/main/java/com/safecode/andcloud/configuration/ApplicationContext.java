@@ -1,6 +1,8 @@
 package com.safecode.andcloud.configuration;
 
+import com.safecode.andcloud.compoment.ControlACWebSocketServer;
 import com.safecode.andcloud.compoment.LogACWebSocketServer;
+import com.safecode.andcloud.compoment.ScreenCastServer;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.worker.MessageReciverWorker;
 import org.libvirt.Connect;
@@ -19,6 +21,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.zeromq.ZMQ;
 
+import java.net.InterfaceAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -116,5 +119,22 @@ public class ApplicationContext {
         String logPortStr = environment.getRequiredProperty("ws.log.port");
         int logPort = Integer.parseInt(logPortStr);
         return new LogACWebSocketServer(logPort);
+    }
+
+    /**
+     * 屏幕收取服务
+     *
+     * @return 服务
+     */
+    @Bean
+    public ScreenCastServer screenCastServer() {
+        ScreenCastServer screenCastServer = new ScreenCastServer(environment.getProperty("screencast.server.address"),
+                environment.getProperty("screencast.server.port"));
+        return screenCastServer;
+    }
+
+    @Bean
+    public ControlACWebSocketServer controlACWebSocketServer() throws UnknownHostException {
+        return new ControlACWebSocketServer(environment.getProperty("ws.control.port"));
     }
 }

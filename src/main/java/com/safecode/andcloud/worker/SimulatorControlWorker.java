@@ -12,6 +12,7 @@ import com.safecode.andcloud.vo.Work;
 import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 
 /**
  * 控制虚拟机，创建线程，或执行想要执行的操作
@@ -27,6 +28,7 @@ public class SimulatorControlWorker implements Runnable {
     private MirrorService mirrorService;
     private LibvirtService libvirtService;
     private ADBService adbService;
+    private Environment environment;
 
     private Work work;
     private String emulatorIdentifier;
@@ -37,6 +39,7 @@ public class SimulatorControlWorker implements Runnable {
         this.mirrorService = SpringContextUtil.getBean(MirrorService.class);
         this.libvirtService = SpringContextUtil.getBean(LibvirtService.class);
         this.adbService = SpringContextUtil.getBean(ADBService.class);
+        this.environment = SpringContextUtil.getBean(Environment.class);
     }
 
     @Override
@@ -46,7 +49,7 @@ public class SimulatorControlWorker implements Runnable {
             logger.info("[Worker] Can't found project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
             return;
         }
-        String imagePath = libvirtService.createDeriveImageFromMasterImage("/var/lib/libvirt/images/branch-4.4-rc4-v1.img", work.getUid().toString());
+        String imagePath = libvirtService.createDeriveImageFromMasterImage(project.getMirrorImage().getPath(), work.getUid().toString());
         if (imagePath.length() == 0) {
             logger.warn("[Worker] Can't create work image for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
         }
@@ -85,8 +88,11 @@ public class SimulatorControlWorker implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt", ip, simulatorDomain.getId() + "");
+                LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt",
+                        this.emulatorIdentifier, simulatorDomain.getId() + "");
                 logcatWorker.start();
+                adbService.startScreenCastService(this.emulatorIdentifier, environment.getProperty("screencast.server.address"),
+                        environment.getProperty("screencast.server.port"));
                 // TODO 安装apk
                 // 写死的 1 分钟检测时间
                 // TODO 检测时间配置
@@ -104,9 +110,5 @@ public class SimulatorControlWorker implements Runnable {
         } catch (LibvirtException e) {
             logger.error("Libvirt operater failed.", e);
         }
-        logger.info(work.getProjectid().toString());
-        System.out.println(work.getProjectid());
-        System.out.println(work.getType());
-        System.out.println(work.getUid());
     }
 }

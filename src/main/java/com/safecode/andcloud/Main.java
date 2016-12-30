@@ -1,13 +1,15 @@
 package com.safecode.andcloud;
 
+import com.safecode.andcloud.compoment.ControlACWebSocketServer;
 import com.safecode.andcloud.compoment.LogACWebSocketServer;
-import com.safecode.andcloud.service.LibvirtService;
+import com.safecode.andcloud.compoment.ScreenCastServer;
 import com.safecode.andcloud.util.DomainDefineXMLUtil;
 import com.safecode.andcloud.worker.MessageReciverWorker;
-import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.io.IOException;
 
 /**
  * Server com.safecode.andcloud.Main Class.
@@ -35,6 +37,19 @@ public class Main {
         logger.info("Start Log WebSocket Server");
         LogACWebSocketServer logACWebSocketServer = ctx.getBean(LogACWebSocketServer.class);
         logACWebSocketServer.start();
+
+        logger.info("Start Control WebSocket Server");
+        ControlACWebSocketServer controlACWebSocketServer = ctx.getBean(ControlACWebSocketServer.class);
+        controlACWebSocketServer.start();
+
+        logger.info("Start ScreenCastServer");
+        ScreenCastServer screenCastServer = ctx.getBean(ScreenCastServer.class);
+        try {
+            screenCastServer.start();
+        } catch (IOException e) {
+            logger.error("ScreenCastServer Start Errror. Exit.", e);
+            System.exit(1);
+        }
     }
 
 }

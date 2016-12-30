@@ -50,4 +50,20 @@ public class ADBService {
         }
     }
 
+    public void startScreenCastService(String identifier, String ip, String port) {
+        String command[] = {"adb", "-s", identifier, "shell", "am", "startservice", "-a", ip + ":" + port, "opensecurity.screencast/.StartScreenCast"};
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            InputStreamReader instream = new InputStreamReader(process.getInputStream());
+            LineNumberReader input = new LineNumberReader(instream);
+            process.waitFor();
+            String line = input.readLine();
+            logger.debug("Adb start ScreenCast for" + identifier + " result - " + line);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
