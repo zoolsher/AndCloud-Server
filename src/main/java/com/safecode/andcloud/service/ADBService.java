@@ -18,15 +18,31 @@ public class ADBService {
 
     private final static Logger logger = LoggerFactory.getLogger(ADBService.class);
 
-    public void connectSIMByIP(String ipAddress) {
-        String command[] = {"adb", "connect", ipAddress + ":5555"};
+    public void connect(String identifier) {
+        String command[] = {"adb", "connect", identifier};
         try {
             Process process = Runtime.getRuntime().exec(command);
             InputStreamReader instream = new InputStreamReader(process.getInputStream());
             LineNumberReader input = new LineNumberReader(instream);
             process.waitFor();
             String line = input.readLine();
-            logger.debug("Adb Connect to " + ipAddress + ":5555 result - " + line);
+            logger.debug("Adb Connect to " + identifier + " result - " + line);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void installAPk(String identifier, String apkpath) {
+        String command[] = {"adb", "-s", identifier, "install", "-r", apkpath};
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            InputStreamReader instream = new InputStreamReader(process.getInputStream());
+            LineNumberReader input = new LineNumberReader(instream);
+            process.waitFor();
+            String line = input.readLine();
+            logger.debug("Adb install apk " + apkpath + " to" + identifier + " result - " + line);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {

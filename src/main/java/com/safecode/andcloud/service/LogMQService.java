@@ -29,7 +29,7 @@ public class LogMQService {
         logMessage.setId(id);
         logMessage.setLog(log);
         String message = g.toJson(logMessage);
-        _mq.send(message);
+        _mq.send(message, 0);
     }
 
 }

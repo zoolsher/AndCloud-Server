@@ -1,5 +1,6 @@
 package com.safecode.andcloud.configuration;
 
+import com.safecode.andcloud.compoment.LogACWebSocketServer;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.worker.MessageReciverWorker;
 import org.libvirt.Connect;
@@ -17,6 +18,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.zeromq.ZMQ;
+
+import java.net.UnknownHostException;
 
 /**
  * Spring Context configuration class.
@@ -94,5 +97,24 @@ public class ApplicationContext {
         socket.bind(endpoint);
         logger.info("log message queen bind on " + endpoint);
         return socket;
+    }
+
+    @Bean(name = "logMQSub")
+    public ZMQ.Socket connectLogMQ() {
+        ZMQ.Context ctx = ZMQ.context(1);
+        ZMQ.Socket socket = ctx.socket(ZMQ.SUB);
+        String endpoint = environment.getRequiredProperty("mq.log.endpoint");
+        socket.connect(endpoint);
+        socket.subscribe("".getBytes());
+        logger.info("log message queue connect");
+        return socket;
+    }
+
+    @Bean(name = "logACWebSocketServer")
+    public LogACWebSocketServer bindLogWebSocketServer() throws UnknownHostException {
+        bindLogMQ();
+        String logPortStr = environment.getRequiredProperty("ws.log.port");
+        int logPort = Integer.parseInt(logPortStr);
+        return new LogACWebSocketServer(logPort);
     }
 }

@@ -7,6 +7,7 @@ import javax.persistence.*;
 
 /**
  * 实体类 工程条目
+ *
  * @author sumy
  */
 @Entity
@@ -31,6 +32,32 @@ public class Project {
     @OneToOne
     @JoinColumn(name = "userid")
     private User user;
+
+    @Column(name = "logo")
+    private String logo;
+
+    @Column(name = "package")
+    private String packageName;
+
+    @OneToOne
+    @JoinColumn(name = "mirrorid")
+    private MirrorImage mirrorImage;
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
 
     public int getId() {
         return id;
@@ -70,5 +97,13 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public MirrorImage getMirrorImage() {
+        return mirrorImage;
+    }
+
+    public void setMirrorImage(MirrorImage mirrorImage) {
+        this.mirrorImage = mirrorImage;
     }
 }
