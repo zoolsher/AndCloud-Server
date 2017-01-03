@@ -38,6 +38,10 @@ public class SimulatorDomain {
     @Column(name = "isdelete", nullable = false)
     private boolean isdelete; // 是否已删除
 
+    @Column(name = "deadlinetime", nullable = false)
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime deadlinetime;
+
     public int getId() {
         return id;
     }
@@ -92,5 +96,15 @@ public class SimulatorDomain {
 
     public void setIsdelete(boolean isdelete) {
         this.isdelete = isdelete;
+    }
+
+    public DateTime getDeadlinetime()
+    {
+        return deadlinetime;
+    }
+
+    public void setDeadlinetime(DateTime deadlinetime)
+    {
+        this.deadlinetime = deadlinetime;
     }
 }

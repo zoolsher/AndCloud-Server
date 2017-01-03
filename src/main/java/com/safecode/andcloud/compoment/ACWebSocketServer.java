@@ -1,15 +1,10 @@
 package com.safecode.andcloud.compoment;
 
 import com.google.gson.Gson;
-import com.safecode.andcloud.dao.TokenDao;
-import com.safecode.andcloud.service.ProjectService;
 import com.safecode.andcloud.vo.message.WsFromClientMessage;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -26,7 +21,11 @@ import java.util.Map;
  */
 public abstract class ACWebSocketServer extends WebSocketServer {
     public abstract void onMessage(WebSocket conn, WebSocketSession session);
+
     protected abstract int onAuth(String token);
+
+    public static final int ROOM_ALL = -1;
+
     private final HashMap<Integer, List<WebSocket>> roomMap = new HashMap<>();
 
     @Override
@@ -39,7 +38,7 @@ public abstract class ACWebSocketServer extends WebSocketServer {
         leftRoom(conn);
         List<WebSocket> conns = roomMap.computeIfAbsent(roomId, k -> new ArrayList<>());
         conns.add(conn);
-        conn.send("you join room "+ roomId);
+        conn.send("you join room " + roomId);
         this.setSessionForConn(conn, WebSocketSession.SESSION_KEY_ROOM, roomId);
     }
 
@@ -62,6 +61,17 @@ public abstract class ACWebSocketServer extends WebSocketServer {
             if (wss != null) {
                 for (WebSocket ws : wss) {
                     ws.send(msg);
+                }
+            }
+        }
+    }
+
+    protected void sendToRoom(int roomid, byte[] data) {
+        synchronized (roomMap) {
+            List<WebSocket> wss = roomMap.get(roomid);
+            if (wss != null) {
+                for (WebSocket ws : wss) {
+                    ws.send(data);
                 }
             }
         }
@@ -148,9 +158,9 @@ public abstract class ACWebSocketServer extends WebSocketServer {
             conn.close();
         } else {
             int authResult = this.onAuth(msg);
-            if(authResult > 0){
-                this.joinRoom(authResult,conn);
-            }else{
+            if (authResult > 0) {
+                this.joinRoom(authResult, conn);
+            } else {
                 this.leftRoom(conn);
                 conn.close();
             }
