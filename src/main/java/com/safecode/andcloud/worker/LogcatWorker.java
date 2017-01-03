@@ -55,7 +55,7 @@ public class LogcatWorker extends Thread {
             // process.waitFor();
             String line = null;
             while ((line = input.readLine()) != null) {
-                System.out.println(line);
+//                System.out.println(line);
                 if (logFileWriter != null) {
                     logFileWriter.println(line);
                     logMQService.sendDeviceLog(this.deviceId, line);

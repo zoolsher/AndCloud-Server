@@ -61,7 +61,7 @@ public class SimulatorControlWorker implements Runnable {
             logger.warn("[Worker] Can't create work image for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
-                work.getUid(), work.getType(), imagePath);
+                work.getUid(), work.getType(), imagePath, work.getTime());
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
         try {
 
@@ -116,6 +116,7 @@ public class SimulatorControlWorker implements Runnable {
                     CommandMessage message = gson.fromJson(msg, CommandMessage.class);
                     if ((simulatorDomain.getId() + "").equals(message.getId())) {
                         if (CommandMessage.COMMAND_CLOSE.equals(message.getCommand())) {
+                            logger.debug("Time run out. Closeing...");
                             logcatWorker.stopme();
                             break;
                         }

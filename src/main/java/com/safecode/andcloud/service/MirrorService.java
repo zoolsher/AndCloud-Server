@@ -29,7 +29,7 @@ public class MirrorService {
     private DeviceMapDao deviceMapDao;
 
 
-    public SimulatorDomain newSimulatorDomain(int projid, int userid, int type, String imagePath) {
+    public SimulatorDomain newSimulatorDomain(int projid, int userid, int type, String imagePath, int time) {
         SimulatorDomain domain = new SimulatorDomain();
         domain.setName(projid + "-" + userid + "-" + type + "-" + new DateTime().getSecondOfMinute()); // 命名方式 项目编号-用户编号-检测方式-当前秒
         domain.setCreatetime(new DateTime());
@@ -37,11 +37,12 @@ public class MirrorService {
         domain.setIsdelete(false);
         domain.setUuid(DomainAttrUtil.generateUUID());
         domain.setMac(DomainAttrUtil.generateMACAddress());
+        domain.setDeadlinetime(new DateTime().plusMinutes(time));
         simulatorDomainDao.saveOrUpdate(domain);
         return domain;
     }
 
-    public DeviceMap newDeviceMap(Project project,SimulatorDomain simulatorDomain,Integer type){
+    public DeviceMap newDeviceMap(Project project, SimulatorDomain simulatorDomain, Integer type) {
         DeviceMap deviceMap = new DeviceMap();
         deviceMap.setProject(project);
         deviceMap.setType(type);
@@ -55,8 +56,7 @@ public class MirrorService {
         simulatorDomainDao.saveOrUpdate(simulatorDomain);
     }
 
-    public List<SimulatorDomain> findUndeleteSimulator()
-    {
+    public List<SimulatorDomain> findUndeleteSimulator() {
         return simulatorDomainDao.findByIsDelete(false);
     }
 

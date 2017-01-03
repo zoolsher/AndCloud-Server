@@ -17,6 +17,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.zeromq.ZMQ;
@@ -30,6 +31,7 @@ import java.net.UnknownHostException;
  */
 @Configuration
 @EnableTransactionManagement
+@EnableScheduling
 @PropertySource(value = {"classpath:application.properties"})
 @ComponentScan(basePackages = "com.safecode.andcloud")
 public class ApplicationContext {

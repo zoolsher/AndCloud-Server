@@ -105,7 +105,7 @@ public class ScreenCastServer {
                 sc.configureBlocking(false);
                 // register 会阻塞 等待 selector() 返回
                 sc.register(connectionBell.getSelector(), SelectionKey.OP_READ);
-                logger.debug("accept connect " + sc.socket().getInetAddress().toString());
+//                logger.debug("accept connect " + sc.socket().getInetAddress().toString());
             } else if (key.isReadable()) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 SocketChannel sc = (SocketChannel) key.channel();
@@ -123,7 +123,7 @@ public class ScreenCastServer {
                         // pass
                     } else {
                         handle(baos.toByteArray(), sc.socket().getInetAddress().getHostAddress());
-                        logger.debug("read screen data from " + sc.socket().getInetAddress().toString() + ": " + baos.toByteArray().length);
+//                        logger.debug("read screen data from " + sc.socket().getInetAddress().toString() + ": " + baos.toByteArray().length);
                         key.cancel();
                         sc.close();
                         return;
