@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * 操作虚拟机镜像的相关服务
  *
@@ -51,6 +53,11 @@ public class MirrorService {
     public void deleteSimulatorDomain(SimulatorDomain simulatorDomain) {
         simulatorDomain.setIsdelete(true);
         simulatorDomainDao.saveOrUpdate(simulatorDomain);
+    }
+
+    public List<SimulatorDomain> findUndeleteSimulator()
+    {
+        return simulatorDomainDao.findByIsDelete(false);
     }
 
 }

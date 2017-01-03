@@ -117,4 +117,16 @@ public class ApplicationContext {
         int logPort = Integer.parseInt(logPortStr);
         return new LogACWebSocketServer(logPort);
     }
+
+    @Bean(name = "controlMQ")
+    public ZMQ.Socket createControlMQ()
+    {
+        ZMQ.Context ctx = ZMQ.context(1);
+        ZMQ.Socket socket = ctx.socket(ZMQ.PUB);
+        String endpoint = environment.getRequiredProperty("mq.command.endpoint");
+        socket.bind(endpoint);
+        logger.info("command mq connect");
+        return socket;
+
+    }
 }

@@ -1,5 +1,6 @@
 package com.safecode.andcloud.worker;
 
+import com.google.gson.Gson;
 import com.safecode.andcloud.model.DeviceMap;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
@@ -9,15 +10,19 @@ import com.safecode.andcloud.service.MirrorService;
 import com.safecode.andcloud.service.ProjectService;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.vo.Work;
+import com.safecode.andcloud.vo.message.CommandMessage;
 import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
+import org.zeromq.ZMQ;
 
 /**
  * 控制虚拟机，创建线程，或执行想要执行的操作
  *
  * @author sumy
  * @author zoolsher
+ * @author sharp
  */
 public class SimulatorControlWorker implements Runnable {
 
@@ -27,6 +32,7 @@ public class SimulatorControlWorker implements Runnable {
     private MirrorService mirrorService;
     private LibvirtService libvirtService;
     private ADBService adbService;
+    private Environment environment;
 
     private Work work;
     private String emulatorIdentifier;
@@ -37,6 +43,7 @@ public class SimulatorControlWorker implements Runnable {
         this.mirrorService = SpringContextUtil.getBean(MirrorService.class);
         this.libvirtService = SpringContextUtil.getBean(LibvirtService.class);
         this.adbService = SpringContextUtil.getBean(ADBService.class);
+        this.environment = SpringContextUtil.getBean(Environment.class);
     }
 
     @Override
@@ -54,6 +61,13 @@ public class SimulatorControlWorker implements Runnable {
                 work.getUid(), work.getType(), imagePath);
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
         try {
+
+            ZMQ.Context ctx = ZMQ.context(1);
+            ZMQ.Socket socket = ctx.socket(ZMQ.SUB);
+            String endpoint = environment.getRequiredProperty("mq.command.endpoint");
+            socket.connect(endpoint);
+            socket.subscribe("".getBytes());
+
             logger.info("[Worker] Define and Start Simulator");
             libvirtService.defineDomain(simulatorDomain);
             libvirtService.startDomainByDomainName(simulatorDomain.getName());
@@ -88,14 +102,19 @@ public class SimulatorControlWorker implements Runnable {
                 LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt", ip, simulatorDomain.getId() + "");
                 logcatWorker.start();
                 // TODO 安装apk
-                // 写死的 1 分钟检测时间
-                // TODO 检测时间配置
-                try {
-                    Thread.sleep(600000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                
+                Gson gson = new Gson();
+                while (true)
+                {
+                    String msg = new String(socket.recv());
+                    CommandMessage message = gson.fromJson(msg, CommandMessage.class);
+                    if((simulatorDomain.getId()+"").equals(message.getId())){
+                        if (CommandMessage.COMMAND_CLOSE.equals(message.getCommand())){
+                            logcatWorker.stopme();
+                            break;
+                        }
+                    }
                 }
-                logcatWorker.stopme();
             }
             libvirtService.stopDomainByDomainName(simulatorDomain.getName());
             libvirtService.undefineDomainByDomainName(simulatorDomain.getName());
