@@ -21,7 +21,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.zeromq.ZMQ;
 
-import java.net.InterfaceAddress;
 import java.net.UnknownHostException;
 
 /**
@@ -136,5 +135,16 @@ public class ApplicationContext {
     @Bean
     public ControlACWebSocketServer controlACWebSocketServer() throws UnknownHostException {
         return new ControlACWebSocketServer(environment.getProperty("ws.control.port"));
+    }
+
+    @Bean(name = "controlMQ")
+    public ZMQ.Socket createControlMQ() {
+        ZMQ.Context ctx = ZMQ.context(1);
+        ZMQ.Socket socket = ctx.socket(ZMQ.PUB);
+        String endpoint = environment.getRequiredProperty("mq.command.endpoint");
+        socket.bind(endpoint);
+        logger.info("command mq connect");
+        return socket;
+
     }
 }
