@@ -13,7 +13,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +27,20 @@ import java.util.Set;
 public class ScreenCastServer {
     private final static Logger logger = LoggerFactory.getLogger(ScreenCastServer.class);
 
+    private Map<String, Integer> ipMap = new HashMap<String, Integer>(); // 记录IP与设备id对应号
+
+    public synchronized void register(String ip, Integer id) {
+        ipMap.put(ip, id);
+    }
+
+    public synchronized void unreigster(String ip) {
+        ipMap.remove(ip);
+    }
+
+    public synchronized Integer getIdByIp(String ip) {
+        return ipMap.get(ip);
+    }
+
     public ControlACWebSocketServer webSocketServer;
 
     public SelectorLoop connectionBell;
@@ -32,7 +48,7 @@ public class ScreenCastServer {
 
     public final String serverip;
     public final int serverport;
-    
+
     public ScreenCastServer(String ip, String port) {
         this.serverip = ip;
         this.serverport = Integer.parseInt(port);
@@ -106,7 +122,7 @@ public class ScreenCastServer {
                     } else if (count == 0) {
                         // pass
                     } else {
-                        handle(baos.toByteArray());
+                        handle(baos.toByteArray(), sc.socket().getInetAddress().getHostAddress());
                         logger.debug("read screen data from " + sc.socket().getInetAddress().toString() + ": " + baos.toByteArray().length);
                         key.cancel();
                         sc.close();
@@ -117,7 +133,10 @@ public class ScreenCastServer {
         }
     }
 
-    public void handle(byte[] data) {
-        this.webSocketServer.sendToRoom(ACWebSocketServer.ROOM_ALL, data);
+    public void handle(byte[] data, String ip) {
+        Integer id = ipMap.get(ip);
+        if (id != null) {
+            this.webSocketServer.sendToRoom(id, data);
+        }
     }
 }

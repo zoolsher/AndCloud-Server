@@ -1,5 +1,6 @@
 package com.safecode.andcloud.worker;
 
+import com.safecode.andcloud.compoment.ScreenCastServer;
 import com.safecode.andcloud.model.DeviceMap;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
@@ -27,6 +28,7 @@ public class SimulatorControlWorker implements Runnable {
     private ProjectService projectService;
     private MirrorService mirrorService;
     private LibvirtService libvirtService;
+    private ScreenCastServer screenCastServer;
     private ADBService adbService;
     private Environment environment;
 
@@ -40,6 +42,7 @@ public class SimulatorControlWorker implements Runnable {
         this.libvirtService = SpringContextUtil.getBean(LibvirtService.class);
         this.adbService = SpringContextUtil.getBean(ADBService.class);
         this.environment = SpringContextUtil.getBean(Environment.class);
+        this.screenCastServer = SpringContextUtil.getBean(ScreenCastServer.class);
     }
 
     @Override
@@ -69,6 +72,7 @@ public class SimulatorControlWorker implements Runnable {
             // 获取IP地址
             String ip = libvirtService.getIPAddressByMacAddress(simulatorDomain.getMac());
             logger.info("SIM " + simulatorDomain.getName() + " IP " + ip);
+            screenCastServer.register(ip, simulatorDomain.getId());
             if (ip == null || ip.equals("")) {
                 // 未获取到 IP 等待 1 秒后重新获取
                 try {
@@ -106,7 +110,7 @@ public class SimulatorControlWorker implements Runnable {
             libvirtService.stopDomainByDomainName(simulatorDomain.getName());
             libvirtService.undefineDomainByDomainName(simulatorDomain.getName());
             mirrorService.deleteSimulatorDomain(simulatorDomain);
-
+            screenCastServer.unreigster(ip);
         } catch (LibvirtException e) {
             logger.error("Libvirt operater failed.", e);
         }
