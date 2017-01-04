@@ -9,6 +9,7 @@ import com.safecode.andcloud.service.ADBService;
 import com.safecode.andcloud.service.LibvirtService;
 import com.safecode.andcloud.service.MirrorService;
 import com.safecode.andcloud.service.ProjectService;
+import com.safecode.andcloud.util.AAPTDumpLogInfoFinderUtil;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.vo.Work;
 import com.safecode.andcloud.vo.message.CommandMessage;
@@ -17,6 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.zeromq.ZMQ;
+
+import java.io.File;
+import java.nio.file.Path;
 
 /**
  * 控制虚拟机，创建线程，或执行想要执行的操作
@@ -38,6 +42,7 @@ public class SimulatorControlWorker implements Runnable {
 
     private Work work;
     private String emulatorIdentifier;
+    private Path projworkspace;
 
     public SimulatorControlWorker(Work work) {
         this.work = work;
@@ -62,6 +67,21 @@ public class SimulatorControlWorker implements Runnable {
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
                 work.getUid(), work.getType(), imagePath, work.getTime());
+        this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId()+"-"+work.getType());
+        if(project.getLogo()==null || project.getPackageName()==null) {
+            Path aaptlog = this.projworkspace.resolve("aaptdump.log");
+            boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
+            if(result) {
+                AAPTDumpLogInfoFinderUtil aaptDumpLogInfoFinderUtil = new AAPTDumpLogInfoFinderUtil(aaptlog.toFile());
+                project.setLogo(aaptDumpLogInfoFinderUtil.getIcon(AAPTDumpLogInfoFinderUtil.ICON_APPLICATION));
+                project.setPackageName(aaptDumpLogInfoFinderUtil.getPackages());
+                projectService.saveOrUpdateProject(project);
+            }else{
+                logger.warn("[Worker] Can't get apk info for project-"+work.getProjectid()+ " from user-" + work.getUid() + ". Exit.");
+                return;
+            }
+        }
+
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
         try {
 

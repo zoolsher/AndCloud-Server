@@ -28,6 +28,10 @@ public class ProjectService {
     @Autowired
     private DeviceMapDao deviceMapDao;
 
+    public void saveOrUpdateProject(Project project) {
+        projectDao.saveOrUpdate(project);
+    }
+
     public Project findProjectByUserIdAndProjectId(Integer userid, Integer projectid) {
         return projectDao.findByUserIdAndProjectId(userid, projectid);
     }
