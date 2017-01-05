@@ -64,6 +64,17 @@ public class ADBService {
         }
     }
 
+    public Process getShellRuntime(String identifier) {
+        String command[] = {"adb", "-s", identifier, "shell"};
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            return process;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public boolean aaptDumpApkInfo(String aaptversion, String apkpath, String logpath) {
         File aapt = new File(System.getProperty("user.dir")).toPath().resolve("aapt")
                 .resolve(aaptversion).resolve("aapt").toFile(); // 获取aapt路径

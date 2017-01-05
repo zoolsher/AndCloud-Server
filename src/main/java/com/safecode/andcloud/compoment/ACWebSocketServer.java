@@ -20,7 +20,7 @@ import java.util.Map;
  * @author zoolsher
  */
 public abstract class ACWebSocketServer extends WebSocketServer {
-    public abstract void onMessage(WebSocket conn, WebSocketSession session);
+    public abstract void onMessage(WebSocketSession session, String message);
 
     protected abstract int onAuth(String token);
 
@@ -97,6 +97,12 @@ public abstract class ACWebSocketServer extends WebSocketServer {
         }
     }
 
+    public WebSocketSession getSession(WebSocket conn) {
+        synchronized (this.sessionMap) {
+            return this.sessionMap.computeIfAbsent(conn, k -> new WebSocketSession(conn));
+        }
+    }
+
     public void deleteSession(WebSocket conn) {
         WebSocketSession session = this.sessionMap.get(conn);
         if (session != null) {
@@ -132,7 +138,14 @@ public abstract class ACWebSocketServer extends WebSocketServer {
     @Override
     public void onMessage(WebSocket conn, String message) {
         Gson json = new Gson();
-        WsFromClientMessage clientMessage = json.fromJson(message, WsFromClientMessage.class);
+        WsFromClientMessage clientMessage = null;
+        try {
+            clientMessage = json.fromJson(message, WsFromClientMessage.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            onMessage(getSession(conn), message);
+            return;
+        }
         this.setSessionForConn(conn, WebSocketSession.SESSION_KEY_LASTTIME, System.currentTimeMillis());
         switch (clientMessage.getType()) {
             case WsFromClientMessage.TYPE_AUTH:

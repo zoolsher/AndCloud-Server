@@ -145,8 +145,18 @@ public class ApplicationContext {
         ZMQ.Socket socket = ctx.socket(ZMQ.PUB);
         String endpoint = environment.getRequiredProperty("mq.command.endpoint");
         socket.bind(endpoint);
-        logger.info("command mq connect");
+        logger.info("command mq connect on" + endpoint);
         return socket;
 
+    }
+
+    @Bean(name = "touchMQ")
+    public ZMQ.Socket prepareTouchMQ() {
+        ZMQ.Context ctx = ZMQ.context(1);
+        ZMQ.Socket socket = ctx.socket(ZMQ.PUB);
+        String endpoint = environment.getRequiredProperty("mq.touch.endpoint");
+        socket.bind(endpoint);
+        logger.info("Touch MQ bind on " + endpoint);
+        return socket;
     }
 }

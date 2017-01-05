@@ -67,17 +67,17 @@ public class SimulatorControlWorker implements Runnable {
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
                 work.getUid(), work.getType(), imagePath, work.getTime());
-        this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId()+"-"+work.getType());
-        if(project.getLogo()==null || project.getPackageName()==null) {
+        this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId() + "-" + work.getType());
+        if (project.getLogo() == null || project.getPackageName() == null) {
             Path aaptlog = this.projworkspace.resolve("aaptdump.log");
             boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
-            if(result) {
+            if (result) {
                 AAPTDumpLogInfoFinderUtil aaptDumpLogInfoFinderUtil = new AAPTDumpLogInfoFinderUtil(aaptlog.toFile());
                 project.setLogo(aaptDumpLogInfoFinderUtil.getIcon(AAPTDumpLogInfoFinderUtil.ICON_APPLICATION));
                 project.setPackageName(aaptDumpLogInfoFinderUtil.getPackages());
                 projectService.saveOrUpdateProject(project);
-            }else{
-                logger.warn("[Worker] Can't get apk info for project-"+work.getProjectid()+ " from user-" + work.getUid() + ". Exit.");
+            } else {
+                logger.warn("[Worker] Can't get apk info for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
                 return;
             }
         }
@@ -128,6 +128,9 @@ public class SimulatorControlWorker implements Runnable {
                 logcatWorker.start();
                 adbService.startScreenCastService(this.emulatorIdentifier, environment.getProperty("screencast.server.address"),
                         environment.getProperty("screencast.server.port"));
+                ScreenTouchWorker touchWorker = new ScreenTouchWorker(this.emulatorIdentifier, simulatorDomain.getId());
+                touchWorker.start();
+
                 // TODO 安装apk
 
                 Gson gson = new Gson();
@@ -138,15 +141,22 @@ public class SimulatorControlWorker implements Runnable {
                         if (CommandMessage.COMMAND_CLOSE.equals(message.getCommand())) {
                             logger.debug("Time run out. Closeing...");
                             logcatWorker.stopme();
+                            touchWorker.stopme();
                             break;
                         }
                     }
                 }
             }
+            screenCastServer.unreigster(ip);
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             libvirtService.stopDomainByDomainName(simulatorDomain.getName());
             libvirtService.undefineDomainByDomainName(simulatorDomain.getName());
             mirrorService.deleteSimulatorDomain(simulatorDomain);
-            screenCastServer.unreigster(ip);
+
         } catch (LibvirtException e) {
             logger.error("Libvirt operater failed.", e);
         }
