@@ -3,6 +3,7 @@ package com.safecode.andcloud.worker;
 import com.google.gson.Gson;
 import com.safecode.andcloud.compoment.ScreenCastServer;
 import com.safecode.andcloud.model.DeviceMap;
+import com.safecode.andcloud.model.MirrorImage;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
 import com.safecode.andcloud.service.ADBService;
@@ -11,6 +12,7 @@ import com.safecode.andcloud.service.MirrorService;
 import com.safecode.andcloud.service.ProjectService;
 import com.safecode.andcloud.util.AAPTDumpLogInfoFinderUtil;
 import com.safecode.andcloud.util.SpringContextUtil;
+import com.safecode.andcloud.vo.EmulatorParameter;
 import com.safecode.andcloud.vo.Work;
 import com.safecode.andcloud.vo.message.CommandMessage;
 import org.libvirt.LibvirtException;
@@ -61,13 +63,15 @@ public class SimulatorControlWorker implements Runnable {
             logger.info("[Worker] Can't found project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
             return;
         }
-        String imagePath = libvirtService.createDeriveImageFromMasterImage(project.getMirrorImage().getPath(), work.getUid().toString());
+        MirrorImage mirrorImage = project.getMirrorImage();
+        String imagePath = libvirtService.createDeriveImageFromMasterImage(mirrorImage.getPath(), work.getUid().toString());
         if (imagePath.length() == 0) {
             logger.warn("[Worker] Can't create work image for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
                 work.getUid(), work.getType(), imagePath, work.getTime());
         this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId() + "-" + work.getType());
+        boolean dircreate = this.projworkspace.toFile().mkdirs();
         if (project.getLogo() == null || project.getPackageName() == null) {
             Path aaptlog = this.projworkspace.resolve("aaptdump.log");
             boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
@@ -83,6 +87,8 @@ public class SimulatorControlWorker implements Runnable {
         }
 
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
+        EmulatorParameter parameter = new EmulatorParameter(mirrorImage.getWidth(), mirrorImage.getHeight(),
+                mirrorImage.getWmwidth(), mirrorImage.getWmheight(), 32767, 32767);
         try {
 
             ZMQ.Context ctx = ZMQ.context(1);
@@ -123,12 +129,12 @@ public class SimulatorControlWorker implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                LogcatWorker logcatWorker = new LogcatWorker(simulatorDomain.getName() + ".txt",
+                LogcatWorker logcatWorker = new LogcatWorker(this.projworkspace.resolve("logcat.log").toString(),
                         this.emulatorIdentifier, simulatorDomain.getId() + "");
                 logcatWorker.start();
                 adbService.startScreenCastService(this.emulatorIdentifier, environment.getProperty("screencast.server.address"),
                         environment.getProperty("screencast.server.port"));
-                ScreenTouchWorker touchWorker = new ScreenTouchWorker(this.emulatorIdentifier, simulatorDomain.getId());
+                ScreenTouchWorker touchWorker = new ScreenTouchWorker(this.emulatorIdentifier, simulatorDomain.getId(), parameter);
                 touchWorker.start();
 
                 // TODO 安装apk

@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.safecode.andcloud.service.ADBService;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.util.screentouch.DefaultInstructionParser;
+import com.safecode.andcloud.util.screentouch.EvTouchInstructionParser;
 import com.safecode.andcloud.util.screentouch.InstructionParser;
+import com.safecode.andcloud.vo.EmulatorParameter;
 import com.safecode.andcloud.vo.message.ScreenTouchMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,7 @@ public class ScreenTouchWorker extends Thread {
     private boolean isstop = false;
     private final String identify;
     private final int emulatorId;
+    private final EmulatorParameter parameter;
 
     private Gson gson = new Gson();
     private InstructionParser parser = new DefaultInstructionParser();
@@ -34,9 +37,12 @@ public class ScreenTouchWorker extends Thread {
     private ADBService adbService;
     private Environment environment;
 
-    public ScreenTouchWorker(String identify, int eid) {
+    public ScreenTouchWorker(String identify, int eid, EmulatorParameter parameter) {
         this.identify = identify;
         this.emulatorId = eid;
+        this.parameter = parameter;
+        this.parser = new EvTouchInstructionParser(parameter.getScreenwidth(), parameter.getScreenheight(),
+                parameter.getWmwidth(), parameter.getWmheight(), parameter.getMaxxpixel(), parameter.getMaxypixel());
 
         this.adbService = SpringContextUtil.getBean(ADBService.class);
         this.environment = SpringContextUtil.getBean(Environment.class);

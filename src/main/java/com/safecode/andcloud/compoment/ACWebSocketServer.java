@@ -155,7 +155,7 @@ public abstract class ACWebSocketServer extends WebSocketServer {
                 this.onPing(conn);
                 break;
             default:
-                this.onUnKnowType(conn, clientMessage);
+                onMessage(getSession(conn), message);
                 break;
         }
     }
@@ -181,10 +181,6 @@ public abstract class ACWebSocketServer extends WebSocketServer {
     }
 
     public void onPing(WebSocket conn) {
-
-    }
-
-    public void onUnKnowType(WebSocket conn, WsFromClientMessage message) {
 
     }
 
