@@ -88,7 +88,8 @@ public class SimulatorControlWorker implements Runnable {
 
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
         EmulatorParameter parameter = new EmulatorParameter(mirrorImage.getWidth(), mirrorImage.getHeight(),
-                mirrorImage.getWmwidth(), mirrorImage.getWmheight(), 32767, 32767);
+                mirrorImage.getWmwidth(), mirrorImage.getWmheight(), 32767, 32767,
+                "/dev/input/event1");
         try {
 
             ZMQ.Context ctx = ZMQ.context(1);

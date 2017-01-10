@@ -81,7 +81,10 @@ public class ScreenTouchWorker extends Thread {
             }
             List<String> instructions = parser.parse(message.getMsg());
             for (String inst : instructions) {
-                writer.println(inst);
+                String touchcommand = "sendevent " + parameter.getTouchdevice() + " " + inst;
+                logger.debug("touch command: " + touchcommand);
+                writer.println(touchcommand);
+                writer.flush();
             }
         }
 

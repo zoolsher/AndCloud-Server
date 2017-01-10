@@ -31,11 +31,11 @@ public class MirrorService {
 
     public SimulatorDomain newSimulatorDomain(int projid, int userid, int type, String imagePath, int time) {
         SimulatorDomain domain = new SimulatorDomain();
-        domain.setName(projid + "-" + userid + "-" + type + "-" + new DateTime().getSecondOfMinute()); // 命名方式 项目编号-用户编号-检测方式-当前秒
+        domain.setUuid(DomainAttrUtil.generateUUID());
+        domain.setName(projid + "-" + userid + "-" + type + "-" + domain.getUuid()); // 命名方式 项目编号-用户编号-检测方式-UUID
         domain.setCreatetime(new DateTime());
         domain.setImagepath(imagePath);
         domain.setIsdelete(false);
-        domain.setUuid(DomainAttrUtil.generateUUID());
         domain.setMac(DomainAttrUtil.generateMACAddress());
         domain.setDeadlinetime(new DateTime().plusMinutes(time));
         simulatorDomainDao.saveOrUpdate(domain);

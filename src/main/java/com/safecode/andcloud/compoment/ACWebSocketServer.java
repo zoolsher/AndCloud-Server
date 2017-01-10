@@ -5,6 +5,8 @@ import com.safecode.andcloud.vo.message.WsFromClientMessage;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -20,6 +22,8 @@ import java.util.Map;
  * @author zoolsher
  */
 public abstract class ACWebSocketServer extends WebSocketServer {
+    private final static Logger logger = LoggerFactory.getLogger(ACWebSocketServer.class);
+
     public abstract void onMessage(WebSocketSession session, String message);
 
     protected abstract int onAuth(String token);
@@ -137,6 +141,7 @@ public abstract class ACWebSocketServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
+        logger.debug("Client message: " + message);
         Gson json = new Gson();
         WsFromClientMessage clientMessage = null;
         try {
@@ -146,6 +151,7 @@ public abstract class ACWebSocketServer extends WebSocketServer {
             onMessage(getSession(conn), message);
             return;
         }
+        logger.debug("Parse as command " + clientMessage.getType() + " - " + clientMessage.getDetail());
         this.setSessionForConn(conn, WebSocketSession.SESSION_KEY_LASTTIME, System.currentTimeMillis());
         switch (clientMessage.getType()) {
             case WsFromClientMessage.TYPE_AUTH:
@@ -166,6 +172,7 @@ public abstract class ACWebSocketServer extends WebSocketServer {
     }
 
     public void onAuth(WebSocket conn, String msg) {
+        logger.debug("auth conn " + msg);
         if (msg == null) {
             this.leftRoom(conn);
             conn.close();

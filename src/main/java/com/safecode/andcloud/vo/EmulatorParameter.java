@@ -15,13 +15,18 @@ public class EmulatorParameter {
     private int maxxpixel;
     private int maxypixel;
 
-    public EmulatorParameter(int screenwidth, int screenheight, int wmwidth, int wmheight, int maxxpixel, int maxypixel) {
+    private String touchdevice;
+
+    public EmulatorParameter(int screenwidth, int screenheight, int wmwidth, int wmheight, int maxxpixel, int maxypixel,
+                             String touchdevice) {
         this.screenwidth = screenwidth;
         this.screenheight = screenheight;
         this.wmwidth = wmwidth;
         this.wmheight = wmheight;
         this.maxxpixel = maxxpixel;
         this.maxypixel = maxypixel;
+
+        this.touchdevice = touchdevice;
     }
 
     public int getScreenwidth() {
@@ -46,5 +51,9 @@ public class EmulatorParameter {
 
     public int getMaxypixel() {
         return maxypixel;
+    }
+
+    public String getTouchdevice() {
+        return touchdevice;
     }
 }

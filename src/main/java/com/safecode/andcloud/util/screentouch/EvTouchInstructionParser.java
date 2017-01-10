@@ -51,6 +51,10 @@ public class EvTouchInstructionParser implements InstructionParser {
         String[] insts = instruction.split(",");
         double x = Double.parseDouble(insts[1]);
         double y = Double.parseDouble(insts[2]);
+        // 3 0 x 移动坐标x
+        // 3 1 y 移动坐标y
+        instructions.add("3 0 " + (int) (x * this.pixelwidth + this.pixelstartx));
+        instructions.add("3 1 " + (int) (y * this.pixelheight + this.pixelstarty));
         switch (insts[0]) {
             case "DOWN":
                 // 1 272 1 鼠标左键按下
@@ -66,10 +70,6 @@ public class EvTouchInstructionParser implements InstructionParser {
             default:
                 return instructions;
         }
-        // 3 0 x 移动坐标x
-        // 3 1 y 移动坐标y
-        instructions.add("3 0 " + (int) (x * this.pixelwidth + this.pixelstartx));
-        instructions.add("3 1 " + (int) (y * this.pixelheight + this.pixelstarty));
         // 0 0 0 提交
         instructions.add("0 0 0");
         return instructions;
