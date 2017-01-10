@@ -23,13 +23,18 @@ public class LogMQService {
     @Qualifier("logmq")
     private Socket _mq;
 
-    public void sendDeviceLog(String id, String log) {
-        Gson g = new Gson();
-        LogMessage logMessage = new LogMessage();
-        logMessage.setId(id);
-        logMessage.setLog(log);
-        String message = g.toJson(logMessage);
-        _mq.send(message, 0);
+    // Thread IndexOutOfBoundException, need synchronized
+    public synchronized void sendDeviceLog(String id, String log) {
+        try {
+            Gson g = new Gson();
+            LogMessage logMessage = new LogMessage();
+            logMessage.setId(id);
+            logMessage.setLog(log);
+            String message = g.toJson(logMessage);
+            _mq.send(message);
+        } catch (Exception e) {
+            logger.error("An Error occur while send log to device-" + id + " log " + log, e);
+        }
     }
 
 }
