@@ -72,11 +72,11 @@ public class SimulatorControlWorker implements Runnable {
                 work.getUid(), work.getType(), imagePath, work.getTime());
         this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId() + "-" + work.getType());
         boolean dircreate = this.projworkspace.toFile().mkdirs();
+        Path aaptlog = this.projworkspace.resolve("aaptdump.log");
+        boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
+        AAPTDumpLogInfoFinderUtil aaptDumpLogInfoFinderUtil = new AAPTDumpLogInfoFinderUtil(aaptlog.toFile());
         if (project.getLogo() == null || project.getPackageName() == null) {
-            Path aaptlog = this.projworkspace.resolve("aaptdump.log");
-            boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
             if (result) {
-                AAPTDumpLogInfoFinderUtil aaptDumpLogInfoFinderUtil = new AAPTDumpLogInfoFinderUtil(aaptlog.toFile());
                 project.setLogo(aaptDumpLogInfoFinderUtil.getIcon(AAPTDumpLogInfoFinderUtil.ICON_APPLICATION));
                 project.setPackageName(aaptDumpLogInfoFinderUtil.getPackages());
                 projectService.saveOrUpdateProject(project);
@@ -137,7 +137,10 @@ public class SimulatorControlWorker implements Runnable {
                 ScreenTouchWorker touchWorker = new ScreenTouchWorker(this.emulatorIdentifier, simulatorDomain.getId(), parameter);
                 touchWorker.start();
 
-                // TODO 安装apk
+                // 安装 APK
+                adbService.installAPk(this.emulatorIdentifier, project.getFilename());
+                adbService.runAPK(this.emulatorIdentifier, aaptDumpLogInfoFinderUtil.getPackages(),
+                        aaptDumpLogInfoFinderUtil.getLaunchActivity());
 
                 Gson gson = new Gson();
                 while (true) {

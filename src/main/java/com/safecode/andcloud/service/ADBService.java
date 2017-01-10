@@ -48,6 +48,23 @@ public class ADBService {
         }
     }
 
+    public void runAPK(String identifier, String packagename, String luncher) {
+        String runapp = packagename + "/" + luncher;
+        String command[] = {"adb", "-s", identifier, "shell", "am", "start", "-n", runapp};
+        try {
+            Process process = Runtime.getRuntime().exec(command);
+            InputStreamReader instream = new InputStreamReader(process.getInputStream());
+            LineNumberReader input = new LineNumberReader(instream);
+            process.waitFor();
+            String line = input.readLine();
+            logger.debug("Adb run apk " + runapp + " for " + identifier + " result - " + line);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void startScreenCastService(String identifier, String ip, String port) {
         String command[] = {"adb", "-s", identifier, "shell", "am", "startservice", "-a", ip + ":" + port, "opensecurity.screencast/.StartScreenCast"};
         try {
