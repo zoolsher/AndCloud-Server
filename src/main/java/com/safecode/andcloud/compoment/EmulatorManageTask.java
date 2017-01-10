@@ -34,7 +34,7 @@ public class EmulatorManageTask
         Gson gson = new Gson();
         for (SimulatorDomain simulator : unDeleteSimulator)
         {
-            if (simulator.getDeadlinetime().isAfterNow())
+            if (simulator.getDeadlinetime().isBeforeNow())
             {
                 CommandMessage cmd = new CommandMessage();
                 cmd.setId(simulator.getId() + "");
