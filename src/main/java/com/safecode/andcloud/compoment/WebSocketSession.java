@@ -27,11 +27,15 @@ public class WebSocketSession {
         return this.session.get(key);
     }
 
-    public void unset(String key){
+    public void unset(String key) {
         this.session.remove(key);
     }
 
-    public WebSocket getConnection(){
+    public WebSocket getConnection() {
         return connection;
+    }
+
+    public Integer getRoomID() {
+        return (Integer) this.session.get(SESSION_KEY_ROOM);
     }
 }

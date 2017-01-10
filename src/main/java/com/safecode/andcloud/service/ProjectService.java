@@ -28,6 +28,10 @@ public class ProjectService {
     @Autowired
     private DeviceMapDao deviceMapDao;
 
+    public void saveOrUpdateProject(Project project) {
+        projectDao.saveOrUpdate(project);
+    }
+
     public Project findProjectByUserIdAndProjectId(Integer userid, Integer projectid) {
         return projectDao.findByUserIdAndProjectId(userid, projectid);
     }
@@ -37,14 +41,15 @@ public class ProjectService {
     }
 
     public DeviceMap getDeviceMapByProjectAndType(Project project, int type) {
-        return deviceMapDao.getByProjectAndType(project, type);
+//        return deviceMapDao.getByProjectAndType(project, type);
+        return deviceMapDao.getLastByProjectAndType(project, type);
     }
 
-    public Integer getDeviceIdByProjectAndType(Project project,int type){
-        DeviceMap deviceMap = this.getDeviceMapByProjectAndType(project,type);
-        if(null == deviceMap){
+    public Integer getDeviceIdByProjectAndType(Project project, int type) {
+        DeviceMap deviceMap = this.getDeviceMapByProjectAndType(project, type);
+        if (null == deviceMap) {
             return null;
-        }else{
+        } else {
             return deviceMap.getSimulatorDomain().getId();
         }
     }

@@ -6,7 +6,6 @@ import com.safecode.andcloud.model.Token;
 import com.safecode.andcloud.service.ProjectService;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.vo.message.LogMessage;
-import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeromq.ZMQ;
@@ -31,8 +30,8 @@ public class LogACWebSocketServer extends ACWebSocketServer {
     }
 
     @Override
-    public void onMessage(WebSocket conn, WebSocketSession session) {
-
+    public void onMessage(WebSocketSession session, String message) {
+        // do nothing
     }
 
     @Override
