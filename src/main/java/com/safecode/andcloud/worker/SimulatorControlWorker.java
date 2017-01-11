@@ -2,19 +2,20 @@ package com.safecode.andcloud.worker;
 
 import com.google.gson.Gson;
 import com.safecode.andcloud.compoment.ScreenCastServer;
-import com.safecode.andcloud.model.DeviceMap;
-import com.safecode.andcloud.model.MirrorImage;
-import com.safecode.andcloud.model.Project;
-import com.safecode.andcloud.model.SimulatorDomain;
+import com.safecode.andcloud.model.*;
 import com.safecode.andcloud.service.ADBService;
 import com.safecode.andcloud.service.LibvirtService;
 import com.safecode.andcloud.service.MirrorService;
 import com.safecode.andcloud.service.ProjectService;
 import com.safecode.andcloud.util.AAPTDumpLogInfoFinderUtil;
+import com.safecode.andcloud.util.APKFileUtil;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.vo.EmulatorParameter;
 import com.safecode.andcloud.vo.Work;
 import com.safecode.andcloud.vo.message.CommandMessage;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.libvirt.LibvirtException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,12 @@ import org.springframework.core.env.Environment;
 import org.zeromq.ZMQ;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * 控制虚拟机，创建线程，或执行想要执行的操作
@@ -70,20 +76,65 @@ public class SimulatorControlWorker implements Runnable {
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
                 work.getUid(), work.getType(), imagePath, work.getTime());
-        this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId() + "-" + work.getType());
+        this.projworkspace = new File(this.environment.getProperty("path.workspace")).toPath().resolve(project.getId() + "-" + work.getType() + "-" + simulatorDomain.getUuid());
         boolean dircreate = this.projworkspace.toFile().mkdirs();
-        Path aaptlog = this.projworkspace.resolve("aaptdump.log");
-        boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
-        AAPTDumpLogInfoFinderUtil aaptDumpLogInfoFinderUtil = new AAPTDumpLogInfoFinderUtil(aaptlog.toFile());
-        if (project.getLogo() == null || project.getPackageName() == null) {
-            if (result) {
-                project.setLogo(aaptDumpLogInfoFinderUtil.getIcon(AAPTDumpLogInfoFinderUtil.ICON_APPLICATION));
-                project.setPackageName(aaptDumpLogInfoFinderUtil.getPackages());
+
+        // 复制apk文件到工作目录
+        File infile = new File(project.getFilename());
+        File simplefile = this.projworkspace.resolve("simple.apk").toFile();
+        try {
+            FileUtils.copyFile(infile, simplefile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // 计算文件md5并插入apk数据库
+        APKInfo apkInfo = null;
+        try {
+            FileInputStream fis = new FileInputStream(infile);
+            byte[] filebytes = IOUtils.toByteArray(fis);
+            String md5 = DigestUtils.md5Hex(filebytes);
+            apkInfo = projectService.getAPKInfoByAPKMd5(md5);
+            // 数据库中不存在APKInfo，则重新计算并插入
+            if (apkInfo == null) {
+                Path aaptlog = this.projworkspace.resolve("aaptdump.log");
+                boolean result = adbService.aaptDumpApkInfo(environment.getProperty("path.aapt.version"), project.getFilename(), aaptlog.toString());
+                AAPTDumpLogInfoFinderUtil aaptDumpLogInfoFinderUtil = new AAPTDumpLogInfoFinderUtil(aaptlog.toFile());
+                String sha1 = DigestUtils.sha1Hex(filebytes);
+                String sha256 = DigestUtils.sha256Hex(filebytes);
+                ZipFile apkzipfile = new ZipFile(infile);
+
+                apkInfo = new APKInfo();
+                apkInfo.setSize(filebytes.length);
+                apkInfo.setPackagename(aaptDumpLogInfoFinderUtil.getPackages());
+                apkInfo.setMainactivity(aaptDumpLogInfoFinderUtil.getLaunchActivity());
+                apkInfo.setVersioncode(aaptDumpLogInfoFinderUtil.getVersionCode());
+                apkInfo.setVersionname(aaptDumpLogInfoFinderUtil.getVersionName());
+                apkInfo.setMaxsdk(null);
+                apkInfo.setMinsdk(aaptDumpLogInfoFinderUtil.getSdkversion());
+                apkInfo.setTargetsdk(aaptDumpLogInfoFinderUtil.getTargetsdkversion());
+                apkInfo.setMd5(md5);
+                apkInfo.setSha1(sha1);
+                apkInfo.setSha256(sha256);
+                apkInfo.setLabel(aaptDumpLogInfoFinderUtil.getLabel(AAPTDumpLogInfoFinderUtil.LABEL_APPLICATION));
+                apkInfo.setIcon(aaptDumpLogInfoFinderUtil.getIcon(AAPTDumpLogInfoFinderUtil.ICON_APPLICATION));
+
+                ZipEntry iconentry = apkzipfile.getEntry(apkInfo.getIcon());
+                String subfix = apkInfo.getIcon().substring(apkInfo.getIcon().lastIndexOf(".") + 1);
+                String iconbase64 = APKFileUtil.imgToBase64Code(subfix, apkzipfile.getInputStream(iconentry));
+                apkInfo.setIconimg(iconbase64);
+
+                projectService.saveOrUpdateAPKInfo(apkInfo);
+
+                project.setApkInfo(apkInfo);
                 projectService.saveOrUpdateProject(project);
-            } else {
-                logger.warn("[Worker] Can't get apk info for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
-                return;
             }
+        } catch (FileNotFoundException e) {
+            logger.error("[Worker]Can't find source APK for project-" + project.getId() + ". Exit.", e);
+            return;
+        } catch (IOException e) {
+            logger.error("[Worker]Can't process APK file for project-" + project.getId() + ". Exit", e);
+            return;
         }
 
         DeviceMap deviceMap = mirrorService.newDeviceMap(project, simulatorDomain, work.getType());
@@ -140,8 +191,7 @@ public class SimulatorControlWorker implements Runnable {
 
                 // 安装 APK
                 adbService.installAPk(this.emulatorIdentifier, project.getFilename());
-                adbService.runAPK(this.emulatorIdentifier, aaptDumpLogInfoFinderUtil.getPackages(),
-                        aaptDumpLogInfoFinderUtil.getLaunchActivity());
+                adbService.runAPK(this.emulatorIdentifier, apkInfo.getPackagename(), apkInfo.getMainactivity());
 
                 Gson gson = new Gson();
                 while (true) {

@@ -33,31 +33,13 @@ public class Project {
     @JoinColumn(name = "userid")
     private User user;
 
-    @Column(name = "logo")
-    private String logo;
-
-    @Column(name = "package")
-    private String packageName;
-
     @OneToOne
     @JoinColumn(name = "mirrorid")
     private MirrorImage mirrorImage;
 
-    public String getLogo() {
-        return logo;
-    }
-
-    public void setLogo(String logo) {
-        this.logo = logo;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
+    @OneToOne
+    @JoinColumn(name = "apkinfoid")
+    private APKInfo apkInfo;
 
     public int getId() {
         return id;
@@ -105,5 +87,13 @@ public class Project {
 
     public void setMirrorImage(MirrorImage mirrorImage) {
         this.mirrorImage = mirrorImage;
+    }
+
+    public APKInfo getApkInfo() {
+        return apkInfo;
+    }
+
+    public void setApkInfo(APKInfo apkInfo) {
+        this.apkInfo = apkInfo;
     }
 }

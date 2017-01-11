@@ -29,6 +29,8 @@ public class AAPTDumpLogInfoFinderUtil {
     private String versionName;
     private String launchActivity;
     private String packages;
+    private String sdkversion;
+    private String targetsdkversion;
     private Set<String> userpermissions;
     private Map<String, String> labels;
     private Map<String, String> icons;
@@ -58,6 +60,12 @@ public class AAPTDumpLogInfoFinderUtil {
                     extractLabel(line);
                     extractIcon(line);
                 }
+                if (line.startsWith("sdkVersion")) {
+                    extractSdkVersion(line);
+                }
+                if (line.startsWith("targetSdkVersion")) {
+                    extractTargetSdkVersion(line);
+                }
 
             }
         } catch (FileNotFoundException e) {
@@ -83,6 +91,14 @@ public class AAPTDumpLogInfoFinderUtil {
         return packages;
     }
 
+    public String getSdkversion() {
+        return sdkversion;
+    }
+
+    public String getTargetsdkversion() {
+        return targetsdkversion;
+    }
+
     public Set<String> getUserpermissions() {
         return userpermissions;
     }
@@ -105,6 +121,8 @@ public class AAPTDumpLogInfoFinderUtil {
 
     public void dumpInformation() {
         System.out.println("package: " + packages);
+        System.out.println("sdkVersion: " + sdkversion);
+        System.out.println("targetSdkVersion: " + targetsdkversion);
         System.out.println("versionCode: " + versionCode);
         System.out.println("versionName: " + versionName);
         System.out.println("launchactivity: " + launchActivity);
@@ -135,6 +153,22 @@ public class AAPTDumpLogInfoFinderUtil {
         Matcher match = patn.matcher(output);
         if (match.find()) {
             versionName = match.group(1).trim();
+        }
+    }
+
+    private void extractSdkVersion(String output) {
+        Pattern patn = Pattern.compile("sdkVersion:'" + FIELD_PATTERN + "'");
+        Matcher match = patn.matcher(output);
+        if (match.find()) {
+            sdkversion = match.group(1).trim();
+        }
+    }
+
+    private void extractTargetSdkVersion(String output) {
+        Pattern patn = Pattern.compile("targetSdkVersion:'" + FIELD_PATTERN + "'");
+        Matcher match = patn.matcher(output);
+        if (match.find()) {
+            targetsdkversion = match.group(1).trim();
         }
     }
 
