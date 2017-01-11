@@ -14,6 +14,8 @@ import com.safecode.andcloud.vo.EmulatorParameter;
 import com.safecode.andcloud.vo.Work;
 import com.safecode.andcloud.vo.message.CommandMessage;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.libvirt.LibvirtException;
@@ -27,8 +29,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+
 
 /**
  * 控制虚拟机，创建线程，或执行想要执行的操作
@@ -119,7 +120,7 @@ public class SimulatorControlWorker implements Runnable {
                 apkInfo.setLabel(aaptDumpLogInfoFinderUtil.getLabel(AAPTDumpLogInfoFinderUtil.LABEL_APPLICATION));
                 apkInfo.setIcon(aaptDumpLogInfoFinderUtil.getIcon(AAPTDumpLogInfoFinderUtil.ICON_APPLICATION));
 
-                ZipEntry iconentry = apkzipfile.getEntry(apkInfo.getIcon());
+                ZipArchiveEntry iconentry = apkzipfile.getEntry(apkInfo.getIcon());
                 String subfix = apkInfo.getIcon().substring(apkInfo.getIcon().lastIndexOf(".") + 1);
                 String iconbase64 = APKFileUtil.imgToBase64Code(subfix, apkzipfile.getInputStream(iconentry));
                 apkInfo.setIconimg(iconbase64);
