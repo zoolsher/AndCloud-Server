@@ -28,7 +28,7 @@ public class ReportUtil
             Properties properties = new Properties();
             try
             {
-                properties.load(new FileInputStream("main/resources/API.properties"));
+                properties.load(new FileInputStream("src/main/resources/API.properties"));
             } catch (IOException e)
             {
                 e.printStackTrace();
