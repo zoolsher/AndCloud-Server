@@ -3,12 +3,10 @@ package com.safecode.andcloud.worker;
 import com.google.gson.Gson;
 import com.safecode.andcloud.compoment.ScreenCastServer;
 import com.safecode.andcloud.model.*;
-import com.safecode.andcloud.service.ADBService;
-import com.safecode.andcloud.service.LibvirtService;
-import com.safecode.andcloud.service.MirrorService;
-import com.safecode.andcloud.service.ProjectService;
+import com.safecode.andcloud.service.*;
 import com.safecode.andcloud.util.AAPTDumpLogInfoFinderUtil;
 import com.safecode.andcloud.util.APKFileUtil;
+import com.safecode.andcloud.util.ReportParser;
 import com.safecode.andcloud.util.SpringContextUtil;
 import com.safecode.andcloud.vo.EmulatorParameter;
 import com.safecode.andcloud.vo.Work;
@@ -29,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 
 /**
@@ -47,6 +46,7 @@ public class SimulatorControlWorker implements Runnable {
     private LibvirtService libvirtService;
     private ScreenCastServer screenCastServer;
     private ADBService adbService;
+    private ReportService reportService;
     private Environment environment;
 
     private Work work;
@@ -61,6 +61,7 @@ public class SimulatorControlWorker implements Runnable {
         this.adbService = SpringContextUtil.getBean(ADBService.class);
         this.environment = SpringContextUtil.getBean(Environment.class);
         this.screenCastServer = SpringContextUtil.getBean(ScreenCastServer.class);
+        this.reportService = SpringContextUtil.getBean(ReportService.class);
     }
 
     @Override
@@ -142,6 +143,7 @@ public class SimulatorControlWorker implements Runnable {
         EmulatorParameter parameter = new EmulatorParameter(mirrorImage.getWidth(), mirrorImage.getHeight(),
                 mirrorImage.getWmwidth(), mirrorImage.getWmheight(), 32767, 32767,
                 "/dev/input/event1");
+        Path logcatPath = this.projworkspace.resolve("logcat.log");
         try {
 
             ZMQ.Context ctx = ZMQ.context(1);
@@ -182,7 +184,7 @@ public class SimulatorControlWorker implements Runnable {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                LogcatWorker logcatWorker = new LogcatWorker(this.projworkspace.resolve("logcat.log").toString(),
+                LogcatWorker logcatWorker = new LogcatWorker(logcatPath.toString(),
                         this.emulatorIdentifier, simulatorDomain.getId() + "");
                 logcatWorker.start();
                 adbService.startScreenCastService(this.emulatorIdentifier, environment.getProperty("screencast.server.address"),
@@ -218,6 +220,12 @@ public class SimulatorControlWorker implements Runnable {
             libvirtService.undefineDomainByDomainName(simulatorDomain.getName());
             mirrorService.deleteSimulatorDomain(simulatorDomain);
 
+            // 处理Logcat数据
+            logger.debug(project.getId() + "Progress Logcat...");
+            List<ReportItem> reportItems = ReportParser.processLogcatToReport(logcatPath.toString(), apkInfo.getPackagename());
+            reportService.saveReportItemListToEmulator(reportItems, simulatorDomain);
+
+            logger.debug(project.getId() + "Over.");
         } catch (LibvirtException e) {
             logger.error("Libvirt operater failed.", e);
         }

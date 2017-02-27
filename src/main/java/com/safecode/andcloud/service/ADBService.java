@@ -39,8 +39,12 @@ public class ADBService {
             InputStreamReader instream = new InputStreamReader(process.getInputStream());
             LineNumberReader input = new LineNumberReader(instream);
             process.waitFor();
-            String line = input.readLine();
-            logger.debug("Adb install apk " + apkpath + " to" + identifier + " result - " + line);
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = input.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            logger.debug("Adb install apk " + apkpath + " to" + identifier + " result - " + stringBuilder.toString());
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
