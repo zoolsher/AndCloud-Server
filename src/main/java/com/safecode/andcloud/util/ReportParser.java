@@ -58,7 +58,7 @@ public class ReportParser {
 
                         reportItem.setRet(xLogMap.getOrDefault("return", "").toString());
                         reportItem.setArgs(xLogMap.getOrDefault("args", "").toString());
-                        reportItem.setTimestamp(xLogMap.getOrDefault("timestamp", "").toString());
+                        reportItem.setTimestamp(Long.parseLong(xLogMap.getOrDefault("timestamp", "-1").toString()));
 
 //                        String methodDescript = "{\"class\":\"" + cls + "\",\"method\":\"" + mtd + "\",\"return\":\"" + ret + "\",\"arguments\":\"" + args + "\",\"timestamp\":\"" + timestamp + "\"}";
 

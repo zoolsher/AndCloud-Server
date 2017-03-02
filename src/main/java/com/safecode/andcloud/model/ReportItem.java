@@ -29,23 +29,28 @@ public class ReportItem {
     @Column(name = "id", unique = true, nullable = false)
     private int id;
 
+    @Lob
     @Column(name = "ret")
     private String ret;
 
+    @Lob
     @Column(name = "cls")
     private String cls;
 
+    @Lob
     @Column(name = "mtd")
     private String mtd;
 
+    @Lob
     @Column(name = "args")
     private String args;
 
+    @Lob
     @Column(name = "ext")
     private String ext;
 
     @Column(name = "timestamp")
-    private String timestamp;
+    private Long timestamp;
 
     @Column(name = "type")
     private String type;
@@ -110,11 +115,11 @@ public class ReportItem {
         this.type = type;
     }
 
-    public String getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(String timestamp) {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 
