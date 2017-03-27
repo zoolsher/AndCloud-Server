@@ -59,6 +59,10 @@ public class APKInfo {
     @Column(name = "label")
     private String label;
 
+    @OneToOne
+    @JoinColumn(name = "staticinfoid")
+    private APKStaticAnalysisInfo staticAnalysisInfo;
+
     public int getId() {
         return id;
     }
@@ -177,5 +181,13 @@ public class APKInfo {
 
     public void setLabel(String label) {
         this.label = label;
+    }
+
+    public APKStaticAnalysisInfo getStaticAnalysisInfo() {
+        return staticAnalysisInfo;
+    }
+
+    public void setStaticAnalysisInfo(APKStaticAnalysisInfo staticAnalysisInfo) {
+        this.staticAnalysisInfo = staticAnalysisInfo;
     }
 }

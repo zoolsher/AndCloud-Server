@@ -13,6 +13,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class APKInfoDao extends BaseDao {
 
+    public APKInfo findById(int id) {
+        return this.getSessionFactory().getCurrentSession().get(APKInfo.class, id);
+    }
+
     public void saveOrUpdate(APKInfo apkInfo) {
         this.getSessionFactory().getCurrentSession().saveOrUpdate(apkInfo);
     }

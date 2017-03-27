@@ -1,10 +1,8 @@
 package com.safecode.andcloud.service;
 
-import com.safecode.andcloud.dao.APKInfoDao;
 import com.safecode.andcloud.dao.DeviceMapDao;
 import com.safecode.andcloud.dao.ProjectDao;
 import com.safecode.andcloud.dao.TokenDao;
-import com.safecode.andcloud.model.APKInfo;
 import com.safecode.andcloud.model.DeviceMap;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.Token;
@@ -30,9 +28,6 @@ public class ProjectService {
     @Autowired
     private DeviceMapDao deviceMapDao;
 
-    @Autowired
-    private APKInfoDao apkInfoDao;
-
     public void saveOrUpdateProject(Project project) {
         projectDao.saveOrUpdate(project);
     }
@@ -46,7 +41,6 @@ public class ProjectService {
     }
 
     public DeviceMap getDeviceMapByProjectAndType(Project project, int type) {
-//        return deviceMapDao.getByProjectAndType(project, type);
         return deviceMapDao.getLastByProjectAndType(project, type);
     }
 
@@ -57,13 +51,5 @@ public class ProjectService {
         } else {
             return deviceMap.getSimulatorDomain().getId();
         }
-    }
-
-    public APKInfo getAPKInfoByAPKMd5(String md5) {
-        return apkInfoDao.findByMD5(md5);
-    }
-
-    public void saveOrUpdateAPKInfo(APKInfo apkInfo) {
-        apkInfoDao.saveOrUpdate(apkInfo);
     }
 }

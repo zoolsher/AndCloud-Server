@@ -1,5 +1,6 @@
 package com.safecode.andcloud;
 
+import com.safecode.andcloud.compoment.AndroidPermissionsHandler;
 import com.safecode.andcloud.compoment.ControlACWebSocketServer;
 import com.safecode.andcloud.compoment.LogACWebSocketServer;
 import com.safecode.andcloud.compoment.ScreenCastServer;
@@ -29,6 +30,9 @@ public class Main {
 
         logger.info("Load domaindefine XML file.");
         logger.debug(DomainDefineXMLUtil.template);
+
+        logger.info("Load AndroidPermissions.");
+        AndroidPermissionsHandler permissionsHandler = ctx.getBean(AndroidPermissionsHandler.class);
 
         logger.info("Start MessageReciver");
         MessageReciverWorker worker = ctx.getBean(MessageReciverWorker.class);

@@ -48,6 +48,7 @@ public class SimulatorControlWorker implements Runnable {
     private ADBService adbService;
     private ReportService reportService;
     private Environment environment;
+    private APKInfoService apkInfoService;
 
     private Work work;
     private String emulatorIdentifier;
@@ -62,6 +63,7 @@ public class SimulatorControlWorker implements Runnable {
         this.environment = SpringContextUtil.getBean(Environment.class);
         this.screenCastServer = SpringContextUtil.getBean(ScreenCastServer.class);
         this.reportService = SpringContextUtil.getBean(ReportService.class);
+        this.apkInfoService = SpringContextUtil.getBean(APKInfoService.class);
     }
 
     @Override
@@ -96,7 +98,7 @@ public class SimulatorControlWorker implements Runnable {
             FileInputStream fis = new FileInputStream(infile);
             byte[] filebytes = IOUtils.toByteArray(fis);
             String md5 = DigestUtils.md5Hex(filebytes);
-            apkInfo = projectService.getAPKInfoByAPKMd5(md5);
+            apkInfo = apkInfoService.getAPKInfoByAPKMd5(md5);
             // 数据库中不存在APKInfo，则重新计算并插入
             if (apkInfo == null) {
                 Path aaptlog = this.projworkspace.resolve("aaptdump.log");
@@ -126,10 +128,14 @@ public class SimulatorControlWorker implements Runnable {
                 String iconbase64 = APKFileUtil.imgToBase64Code(subfix, apkzipfile.getInputStream(iconentry));
                 apkInfo.setIconimg(iconbase64);
 
-                projectService.saveOrUpdateAPKInfo(apkInfo);
+                apkInfoService.saveOrUpdateAPKInfo(apkInfo);
 
                 project.setApkInfo(apkInfo);
                 projectService.saveOrUpdateProject(project);
+
+                // 其它检测项继续检测
+                APKStaticAnalysisWorker staticAnalysisWorker = new APKStaticAnalysisWorker(project);
+                staticAnalysisWorker.start();
             }
         } catch (FileNotFoundException e) {
             logger.error("[Worker]Can't find source APK for project-" + project.getId() + ". Exit.", e);
