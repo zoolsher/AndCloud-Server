@@ -38,7 +38,7 @@ public class NewWorkMessage {
     }
 
     public boolean isvalid() {
-        return projectid != null && type != null && uid != null;
+        return projectid != null && type != null && uid != null && time != null && imageid != null;
     }
 
     public int getTime() {

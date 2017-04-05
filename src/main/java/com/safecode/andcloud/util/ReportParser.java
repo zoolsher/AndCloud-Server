@@ -3,13 +3,12 @@ package com.safecode.andcloud.util;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.safecode.andcloud.model.ReportItem;
+import com.safecode.andcloud.vo.APIReportItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by sharp on 2017/1/10.
@@ -17,7 +16,6 @@ import java.util.Map;
 public class ReportParser {
 
     private static final Logger logger = LoggerFactory.getLogger(ReportParser.class);
-
 
     private ReportParser() {
     }
@@ -27,6 +25,21 @@ public class ReportParser {
 
         String splitSign = String.format("Droidmon-apimonitor-%s:", pkgName);
         List<ReportItem> itemlist = new ArrayList<ReportItem>();
+
+        Set<APIReportItem> API_BASE64 = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_FILEIO = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_RELECT = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_SYSPROP = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_CNTRSLVR = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_CNTVAL = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_BINDER = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_CRYPTO = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_ACNTMNGER = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_DEVICEINFO = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_NET = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_DEXLOADER = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_CMD = new HashSet<APIReportItem>();
+        Set<APIReportItem> API_SMS = new HashSet<APIReportItem>();
 
         try {
             Reader logcatFileReader = new FileReader(logcatPath);
@@ -44,7 +57,7 @@ public class ReportParser {
                     String[] xLogValue = thisLine.split(splitSign, 2);
                     if (xLogValue.length == 2) {
                         logger.debug("Progress..." + thisLine);
-                        ReportItem reportItem = new ReportItem();
+                        APIReportItem reportItem = new APIReportItem();
                         Map<String, Object> xLogMap;
                         try {
                             xLogMap = gson.fromJson(xLogValue[1], new TypeToken<Map<String, Object>>() {
@@ -55,75 +68,135 @@ public class ReportParser {
                         }
                         reportItem.setCls(xLogMap.get("class").toString());
                         reportItem.setMtd(xLogMap.get("method").toString());
+                        if (xLogMap.containsKey("return")) {
+                            reportItem.setRet(xLogMap.get("return").toString());
+                        } else {
+                            reportItem.setRet("No Return Data");
+                        }
 
-                        reportItem.setRet(xLogMap.getOrDefault("return", "").toString());
-                        reportItem.setArgs(xLogMap.getOrDefault("args", "").toString());
+                        if (xLogMap.containsKey("args")) {
+                            reportItem.setArgs(xLogMap.get("args").toString());
+                        } else {
+                            reportItem.setArgs("No Arguments Passed");
+                        }
+
                         reportItem.setTimestamp((long) Double.parseDouble(xLogMap.getOrDefault("timestamp", "-1").toString()));
-
-//                        String methodDescript = "{\"class\":\"" + cls + "\",\"method\":\"" + mtd + "\",\"return\":\"" + ret + "\",\"arguments\":\"" + args + "\",\"timestamp\":\"" + timestamp + "\"}";
 
                         String cls = reportItem.getCls();
                         if (cls.contains("android.util.Base64")) {
-                            reportItem.setType(ReportItem.TYPE_API_BASE64);
+                            if (reportItem.getMtd().contains("decode")) {
+                                List<String> argslist = gson.fromJson(reportItem.getArgs(), new TypeToken<List<String>>() {
+                                }.getType());
+                                if (StringUtil.isBase64(argslist.get(0))) {
+                                    reportItem.setExt(new String(Base64.getDecoder().decode(argslist.get(0))));
+                                }
+                            }
+                            API_BASE64.add(reportItem);
                         }
                         if ((cls.contains("libcore.io")) || (cls.contains("android.app.SharedPreferencesImpl$EditorImpl"))) {
-                            reportItem.setType(ReportItem.TYPE_API_FILEIO);
+                            API_FILEIO.add(reportItem);
                         }
                         if (cls.contains("java.lang.reflect")) {
-                            reportItem.setType(ReportItem.TYPE_API_RELECT);
+                            API_RELECT.add(reportItem);
                         }
                         if ((cls.contains("android.content.ContentResolver"))
                                 || (cls.contains("android.location.Location"))
                                 || (cls.contains("android.media.AudioRecord"))
                                 || (cls.contains("android.media.MediaRecorder"))
                                 || (cls.contains("android.os.SystemProperties"))) {
-                            reportItem.setType(ReportItem.TYPE_API_SYSPROP);
+                            API_SYSPROP.add(reportItem);
+                        }
+                        if (cls.contains("android.app.Activity")
+                                || cls.contains("android.app.ContextImpl")
+                                || cls.contains("android.app.ActivityThread")) {
+                            API_BINDER.add(reportItem);
                         }
                         if ((cls.contains("javax.crypto.spec.SecretKeySpec"))
                                 || (cls.contains("javax.crypto.Cipher"))
                                 || (cls.contains("javax.crypto.Mac"))) {
-                            reportItem.setType(ReportItem.TYPE_API_CRYPTO);
+                            API_CRYPTO.add(reportItem);
                         }
                         if ((cls.contains("android.accounts.AccountManager"))
                                 || (cls.contains("android.app.ApplicationPackageManager"))
                                 || (cls.contains("android.app.NotificationManager"))
                                 || (cls.contains("android.net.ConnectivityManager"))
                                 || (cls.contains("android.content.BroadcastReceiver"))) {
-                            reportItem.setType(ReportItem.TYPE_API_ACNTMNGER);
+                            API_ACNTMNGER.add(reportItem);
                         }
                         if ((cls.contains("android.telephony.TelephonyManager"))
                                 || (cls.contains("android.net.wifi.WifiInfo"))
                                 || (cls.contains("android.os.Debug"))) {
-                            reportItem.setType(ReportItem.TYPE_API_DEVICEINFO);
+                            API_DEVICEINFO.add(reportItem);
                         }
                         if ((cls.contains("dalvik.system.BaseDexClassLoader"))
                                 || (cls.contains("dalvik.system.DexFile"))
                                 || (cls.contains("dalvik.system.DexClassLoader"))
                                 || (cls.contains("dalvik.system.PathClassLoader"))) {
-                            reportItem.setType(ReportItem.TYPE_API_DEXLOADER);
+                            API_DEXLOADER.add(reportItem);
                         }
                         if ((cls.contains("java.lang.Runtime"))
                                 || (cls.contains("java.lang.ProcessBuilder"))
                                 || (cls.contains("java.io.FileOutputStream"))
                                 || (cls.contains("java.io.FileInputStream"))
                                 || (cls.contains("android.os.Process"))) {
-                            reportItem.setType((ReportItem.TYPE_API_CMD));
+                            API_CMD.add(reportItem);
                         }
                         if (cls.contains("android.content.ContentValues")) {
-                            reportItem.setType(ReportItem.TYPE_API_CNTVAL);
+                            API_CNTVAL.add(reportItem);
                         }
                         if (cls.contains("android.telephony.SmsManager")) {
-                            reportItem.setType(ReportItem.TYPE_API_SMS);
+                            API_SMS.add(reportItem);
                         }
                         if ((cls.contains("java.net.URL"))
                                 || (cls.contains("org.apache.http.impl.client.AbstractHttpClient"))) {
-                            reportItem.setType(ReportItem.TYPE_API_NET);
+                            API_NET.add(reportItem);
                         }
-                        itemlist.add(reportItem);
                     }
                 }
             } catch (IOException e) {
                 logger.error("Logcat report file error.", e);
+            }
+            for (APIReportItem reportItem : API_BASE64) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_BASE64));
+            }
+            for (APIReportItem reportItem : API_FILEIO) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_FILEIO));
+            }
+            for (APIReportItem reportItem : API_RELECT) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_RELECT));
+            }
+            for (APIReportItem reportItem : API_SYSPROP) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_SYSPROP));
+            }
+            for (APIReportItem reportItem : API_CNTRSLVR) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_CNTRSLVR));
+            }
+            for (APIReportItem reportItem : API_CNTVAL) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_CNTVAL));
+            }
+            for (APIReportItem reportItem : API_BINDER) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_BINDER));
+            }
+            for (APIReportItem reportItem : API_CRYPTO) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_CRYPTO));
+            }
+            for (APIReportItem reportItem : API_ACNTMNGER) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_ACNTMNGER));
+            }
+            for (APIReportItem reportItem : API_DEVICEINFO) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_DEVICEINFO));
+            }
+            for (APIReportItem reportItem : API_NET) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_NET));
+            }
+            for (APIReportItem reportItem : API_DEXLOADER) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_DEXLOADER));
+            }
+            for (APIReportItem reportItem : API_CMD) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_CMD));
+            }
+            for (APIReportItem reportItem : API_SMS) {
+                itemlist.add(reportItem.toReportItem(ReportItem.TYPE_API_SMS));
             }
         } catch (FileNotFoundException e) {
             logger.error("Logcat report file not found.", e);
