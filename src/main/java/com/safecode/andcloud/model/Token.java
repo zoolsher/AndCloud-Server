@@ -4,6 +4,7 @@ import javax.persistence.*;
 
 /**
  * Created by zoolsher on 2016/12/28.
+ *
  * @auther zoolsher
  */
 @Entity
@@ -11,7 +12,7 @@ import javax.persistence.*;
 public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true,nullable = false)
+    @Column(name = "id", unique = true, nullable = false)
     private int id;
 
     @OneToOne
@@ -22,10 +23,14 @@ public class Token {
     @JoinColumn(name = "projectid")
     private Project project;
 
-    @Column(name="type")
+    @OneToOne
+    @JoinColumn(name = "imageid")
+    private MirrorImage mirrorImage;
+
+    @Column(name = "type")
     private int type;
 
-    @Column(name="token")
+    @Column(name = "token")
     private String token;
 
 
@@ -59,6 +64,14 @@ public class Token {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public MirrorImage getMirrorImage() {
+        return mirrorImage;
+    }
+
+    public void setMirrorImage(MirrorImage mirrorImage) {
+        this.mirrorImage = mirrorImage;
     }
 
     public String getToken() {

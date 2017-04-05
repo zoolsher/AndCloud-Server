@@ -34,10 +34,6 @@ public class Project {
     private User user;
 
     @OneToOne
-    @JoinColumn(name = "mirrorid")
-    private MirrorImage mirrorImage;
-
-    @OneToOne
     @JoinColumn(name = "apkinfoid")
     private APKInfo apkInfo;
 
@@ -79,14 +75,6 @@ public class Project {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public MirrorImage getMirrorImage() {
-        return mirrorImage;
-    }
-
-    public void setMirrorImage(MirrorImage mirrorImage) {
-        this.mirrorImage = mirrorImage;
     }
 
     public APKInfo getApkInfo() {

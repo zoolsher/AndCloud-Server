@@ -17,17 +17,16 @@ public class Work {
     private Integer type;
     private Integer uid;
     private Integer time;
+    private Integer imageid;
 
     public Work(NewWorkMessage message) {
         this.projectid = message.getProjectid();
         this.type = message.getType();
         this.uid = message.getUid();
-        if (message.getTime() == NewWorkMessage.TIME_FIVE_MINS) {
+        this.imageid = message.getImageid();
+        this.time = message.getTime();
+        if (this.time < 5) {
             this.time = 5;
-        } else if (message.getTime() == NewWorkMessage.TIME_TEN_MINS) {
-            this.time = 10;
-        } else {
-            this.time = 60 * 2;
         }
     }
 
@@ -65,5 +64,13 @@ public class Work {
 
     public void setTime(Integer time) {
         this.time = time;
+    }
+
+    public Integer getImageid() {
+        return imageid;
+    }
+
+    public void setImageid(Integer imageid) {
+        this.imageid = imageid;
     }
 }

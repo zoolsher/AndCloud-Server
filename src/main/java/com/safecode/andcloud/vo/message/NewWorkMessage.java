@@ -7,14 +7,11 @@ public class NewWorkMessage {
     public static final Integer TYPE_AUTOMATIC = 0; // 自动进行任务
     public static final Integer TYPE_HAND = 1; // 手动任务
 
-    public static final Integer TIME_INFINITY = 0;
-    public static final Integer TIME_FIVE_MINS = 1;
-    public static final Integer TIME_TEN_MINS = 2;
-
     private Integer projectid;
     private Integer type;
     private Integer uid;
-    private int time;
+    private Integer time;
+    private Integer imageid;
 
     public Integer getProjectid() {
         return projectid;
@@ -48,7 +45,15 @@ public class NewWorkMessage {
         return time;
     }
 
-    public void setTime(int time) {
+    public void setTime(Integer time) {
         this.time = time;
+    }
+
+    public Integer getImageid() {
+        return imageid;
+    }
+
+    public void setImageid(Integer imageid) {
+        this.imageid = imageid;
     }
 }

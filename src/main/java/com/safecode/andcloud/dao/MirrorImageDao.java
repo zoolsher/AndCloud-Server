@@ -16,4 +16,8 @@ public class MirrorImageDao extends BaseDao {
         this.getSessionFactory().getCurrentSession().saveOrUpdate(mirrorImage);
     }
 
+    public MirrorImage findById(int id) {
+        return this.getSessionFactory().getCurrentSession().get(MirrorImage.class, id);
+    }
+
 }

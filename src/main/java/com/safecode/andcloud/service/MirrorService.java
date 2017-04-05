@@ -1,8 +1,10 @@
 package com.safecode.andcloud.service;
 
 import com.safecode.andcloud.dao.DeviceMapDao;
+import com.safecode.andcloud.dao.MirrorImageDao;
 import com.safecode.andcloud.dao.SimulatorDomainDao;
 import com.safecode.andcloud.model.DeviceMap;
+import com.safecode.andcloud.model.MirrorImage;
 import com.safecode.andcloud.model.Project;
 import com.safecode.andcloud.model.SimulatorDomain;
 import com.safecode.andcloud.util.DomainAttrUtil;
@@ -25,9 +27,16 @@ public class MirrorService {
 
     @Autowired
     private SimulatorDomainDao simulatorDomainDao;
+
     @Autowired
     private DeviceMapDao deviceMapDao;
 
+    @Autowired
+    private MirrorImageDao mirrorImageDao;
+
+    public MirrorImage findMirrorImageById(int imageid) {
+        return mirrorImageDao.findById(imageid);
+    }
 
     public SimulatorDomain newSimulatorDomain(int projid, int userid, int type, String imagePath, int time) {
         SimulatorDomain domain = new SimulatorDomain();

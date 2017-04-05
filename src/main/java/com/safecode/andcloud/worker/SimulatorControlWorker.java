@@ -73,10 +73,15 @@ public class SimulatorControlWorker implements Runnable {
             logger.info("[Worker] Can't found project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
             return;
         }
-        MirrorImage mirrorImage = project.getMirrorImage();
+        MirrorImage mirrorImage = this.mirrorService.findMirrorImageById(work.getImageid());
+        if (mirrorImage == null) {
+            logger.warn("[Worker] Can't find mirrorImage-" + work.getImageid() + " for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
+            return;
+        }
         String imagePath = libvirtService.createDeriveImageFromMasterImage(mirrorImage.getPath(), work.getUid().toString());
         if (imagePath.length() == 0) {
             logger.warn("[Worker] Can't create work image for project-" + work.getProjectid() + " from user-" + work.getUid() + ". Exit.");
+            return;
         }
         SimulatorDomain simulatorDomain = mirrorService.newSimulatorDomain(work.getProjectid(),
                 work.getUid(), work.getType(), imagePath, work.getTime());
